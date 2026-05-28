@@ -13,6 +13,7 @@ const ALLOWED_KEYS = new Set([
   'advantage',
   'kingdomFilter',
   'character',
+  'tracker',
 ]);
 
 export function validateKey(key) {

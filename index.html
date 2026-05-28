@@ -2,65 +2,71 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <title>Rojan — Iosandros Companion</title>
-    <style>
-      body {
-        font-family: system-ui, -apple-system, sans-serif;
-        max-width: 640px;
-        margin: 4rem auto;
-        padding: 0 1.5rem;
-        line-height: 1.6;
-        color: #222;
-      }
-      h1 {
-        margin-bottom: 0.25rem;
-      }
-      .sub {
-        color: #666;
-        margin-top: 0;
-      }
-      .next {
-        margin-top: 2.5rem;
-        padding: 1rem 1.25rem;
-        background: #f4f4f0;
-        border-left: 3px solid #888;
-      }
-      a {
-        color: #1a4f8a;
-      }
-      code {
-        background: #eee;
-        padding: 1px 5px;
-        border-radius: 3px;
-        font-size: 0.9em;
-      }
-    </style>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <h1>Welcome, Rojan.</h1>
-    <p class="sub">Your Iosandros companion site is wired up but empty.</p>
+    <header class="topbar">
+      <div class="brand">Rojan <span class="sub">· Iosandros</span></div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="character">Character</button>
+        <button class="tab" data-tab="tracker">Play Tracker</button>
+        <button class="tab" data-tab="kingdoms">13 Kingdoms</button>
+        <button class="tab" data-tab="history">History</button>
+        <button class="tab" data-tab="map">Map</button>
+      </nav>
+    </header>
 
-    <p>
-      The scaffold is live: D1 is connected, the shared world data is
-      seeded, and the migration runner will apply new schema on every push.
-      What's missing is the actual site — that's the part you build with
-      Claude.
-    </p>
+    <main>
+      <!-- ===== Character (Claude fills renderCharacter) ===== -->
+      <section class="panel active" data-panel="character">
+        <div class="empty-state" id="character-empty">
+          <strong>Your character sheet isn't set up yet.</strong>
+          Run Claude Code in this repo and paste the starter prompt from the
+          <code>README</code> — Claude reads your sheet and builds this page.
+          If you just did and still see this, make sure you're signed in.
+        </div>
+        <div id="character-content" hidden></div>
+      </section>
 
-    <div class="next">
-      <strong>Next step:</strong> open the
-      <a href="https://github.com/hbl41/alex-iosandros-app/blob/main/README.md"
-        >README</a
-      >
-      and follow the "What you do" section. You'll need your character
-      sheet handy.
-    </div>
+      <!-- ===== Play Tracker (Claude fills renderTracker) ===== -->
+      <section class="panel" data-panel="tracker">
+        <div class="empty-state" id="tracker-empty">
+          <strong>Your play tracker isn't set up yet.</strong>
+          Ask Claude to wire up a mid-session tracker for your character
+          (current HP, resources, conditions, notes — whatever you track).
+        </div>
+        <div id="tracker-content" hidden></div>
+      </section>
 
-    <p>
-      To confirm the backend is working, hit
-      <code><a href="/api/health">/api/health</a></code> — you should see
-      <code>{ "ok": true, "db": true }</code>.
-    </p>
+      <!-- ===== 13 Kingdoms (baked from data/data.js) ===== -->
+      <section class="panel" data-panel="kingdoms">
+        <div id="kingdoms-grid" class="kingdom-grid"></div>
+        <h2>Territories</h2>
+        <div id="territories-grid" class="kingdom-grid"></div>
+      </section>
+
+      <!-- ===== History (baked from data/data.js) ===== -->
+      <section class="panel" data-panel="history">
+        <div id="history-timeline" class="timeline"></div>
+      </section>
+
+      <!-- ===== Map (assets/map.jpg, pan + zoom) ===== -->
+      <section class="panel" data-panel="map">
+        <div class="map-viewport" id="mapViewport">
+          <img src="assets/map.jpg" id="mapImg" alt="Map of Iosandros" />
+        </div>
+        <div class="map-controls">
+          <button class="btn" id="mapZoomIn">Zoom +</button>
+          <button class="btn" id="mapZoomOut">Zoom −</button>
+          <button class="btn" id="mapReset">Reset</button>
+        </div>
+        <p class="map-hint">Drag to pan, scroll or use the buttons to zoom.</p>
+      </section>
+    </main>
+
+    <script src="data/data.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>

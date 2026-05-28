@@ -1,8 +1,8 @@
 # Alex's Iosandros Companion Site
 
-A personal companion site for **Rojan** in the Iosandros campaign — yours to build, hosted at `alex.iosandros.com` once Brady wires up Cloudflare. The shape is up to you: character sheet, NPC tracker, spell list, session notes, inventory, quest log — whatever helps mid-game.
+A personal companion site for **Rojan** in the Iosandros campaign, hosted at `alex.iosandros.com`. It ships with five standard pages — **Character, Play Tracker, 13 Kingdoms, History, Map**. The three world pages work out of the box; the Character and Play Tracker pages get personalized to your sheet when you run Claude. Add more pages later if you want.
 
-You're not editing code by hand. You hand the repo + your character sheet to Claude, and Claude builds the site. This README is the orientation — read it once, then use the prompt at the bottom.
+You're not editing code by hand. You hand the repo + your character sheet to Claude, and Claude fills in the personal pages. This README is the orientation — read it once, then use the prompt at the bottom.
 
 ---
 
@@ -17,12 +17,29 @@ You don't have to think about any of this — it's the scaffold Brady built:
 | **Auto-migration runner** | When Claude adds a new table, the runner applies it on first request after deploy. You don't run anything by hand. |
 | **Shared world data** | The 13 kingdoms, territories, prophecies, calendar, and in-world history are in `data/data.js` — read-only world canon. No character-specific data is pre-loaded (no NPC seed, no character sheet). |
 | **Backend API** | `/api/people`, `/api/events/`, `/api/state/[key]`, `/api/health` already work. Claude wires the UI to these. |
+| **Five standard pages** | Tab shell + the three world pages (13 Kingdoms, History, Map) are pre-built and identical across every player site. Character + Play Tracker are personalized to your sheet by Claude. |
+
+---
+
+## The five standard pages
+
+Every player site ships with the same five tabs:
+
+| Page | State | Where it comes from |
+|---|---|---|
+| **13 Kingdoms** | ✅ Works now | Renders from `data/data.js` — same world for every player |
+| **History** | ✅ Works now | The in-world timeline from `data/data.js` |
+| **Map** | ✅ Works now | `assets/map.jpg` — drag to pan, scroll to zoom |
+| **Character** | ⬜ Claude fills in | Your sheet, rendered by `renderCharacter()` in `js/app.js` |
+| **Play Tracker** | ⬜ Claude fills in | Your mid-session trackers (HP, resources, notes) via `renderTracker()` |
+
+The two blank pages show a "not set up yet" message until you run Claude. The shell, styling, and the three world pages are already built — Claude's job is to fill the two personal pages from your character sheet (plus a migration that saves your sheet to the database).
 
 ---
 
 ## What you do
 
-Recommended path uses **Claude Code** — Claude's command-line tool that reads and writes files in a local repo and commits + pushes directly. No copy-paste, no GitHub web UI.
+Recommended path uses **Claude Code** — Claude's command-line tool that reads and writes files in a local repo and commits + pushes directly. No copy-paste, no GitHub web UI. (Never used a terminal? Jump to [First-time setup](#first-time-setup-non-coder-walkthrough) for a hand-held version.)
 
 1. **Have a GitHub account.** If you don't, sign up at [github.com](https://github.com). Send Brady your username so he can invite you as a collaborator on `hbl41/alex-iosandros-app`. Accept the invite from the email GitHub sends.
 
@@ -64,45 +81,43 @@ I'm a player in a D&D campaign called Iosandros. My character is Rojan.
 My character sheet is in this directory — find it (look for a .pdf,
 .txt, .md, image, etc.) or ask if you can't.
 
-This repo contains the scaffold for my personal companion site —
-already deployed to alex.iosandros.com on Cloudflare Pages with a D1
-database wired up. The architecture is in README.md; read it before
-generating anything.
+This repo is my personal companion site, already deployed to
+alex.iosandros.com on Cloudflare Pages with a D1 database. Read README.md
+first — it explains the architecture.
 
-Quick orientation:
-- env.PLAYER_DB is the D1 binding
-- New tables go in migrations/000N_*.js (see existing migrations for shape)
-  and get appended to migrations/index.js — the runner applies them on
-  the next deploy
-- Backend conventions live in functions/lib/http.js (json, requireDb,
-  handleError, requireUser)
-- Shared world data lives in data/data.js — read-only reference
-- index.html is currently a placeholder — overwrite it freely
+The site already has five tabs: Character, Play Tracker, 13 Kingdoms,
+History, Map. The three world pages (Kingdoms, History, Map) are DONE and
+shared across all players — do NOT rebuild them. The tab shell and styling
+in index.html / css/style.css / js/app.js are also done.
 
-Before generating anything, ASK me what I want my site to include. Some
-options to surface:
-- Character sheet view (what fields matter to me)
-- NPC roster (the people table exists but is empty — I can seed it from
-  my own notes, or just add NPCs as we play)
-- Spell list / abilities tracker
-- Inventory
-- Session notes / scratchpad
-- In-game calendar
-- Quest log / threads
-- Kingdom reference (data/data.js already has the 13)
-- Anything else I want
+YOUR JOB is the two personal pages, driven by my character sheet:
 
-After I tell you what I want, generate:
-- A 0005_character_seed.js migration that puts my character sheet into
-  app_state (see the "Example: seeding the character sheet" section of
-  README.md for the shape)
-- Any other migrations new features need
-- Any new API endpoints under functions/api/
-- The frontend (index.html, plus any js/css/ files you want to add)
+1. Generate migrations/0005_character_seed.js that saves my sheet into the
+   app_state 'character' row (and a starting 'tracker' row). See the
+   "Example: seeding the character sheet" section of README.md for the
+   exact { id, statements: [...] } shape. Append it to migrations/index.js.
 
-Match the style of the existing files. Keep migrations idempotent
-(CREATE TABLE IF NOT EXISTS, ON CONFLICT DO NOTHING). Don't pull in
-heavy frameworks — vanilla HTML + JS is fine, matches the deploy model.
+2. Fill in the renderCharacter() function in js/app.js. It already fetches
+   my 'character' data — build the sheet UI from it (stats, skills,
+   weapons, abilities, equipment, backstory — whatever my sheet has). Use
+   the el() helper and the existing CSS classes (.kingdom-card, .k-*).
+
+3. Fill in the renderTracker() function in js/app.js. Build controls for
+   what I track mid-session (current HP, resource/ability uses, conditions,
+   a notes box). Persist edits with saveState('tracker', next). Use MY
+   sheet to decide what to track — don't assume another character's
+   resources (no Ring of Discernment / Negotiation Budget unless I have
+   them).
+
+Before you start, ASK me:
+- What's on my character sheet (confirm you parsed it correctly)
+- What I want on the Play Tracker specifically
+- Whether I want any extra pages beyond the standard five (inventory, an
+  NPC roster via the existing /api/people endpoints, quest log, etc.)
+
+Keep migrations idempotent (ON CONFLICT DO NOTHING). Match the existing
+vanilla HTML/JS style — no frameworks. Walk me through big changes before
+making them; one thing at a time.
 ````
 
 ---
@@ -116,30 +131,38 @@ heavy frameworks — vanilla HTML + JS is fine, matches the deploy model.
 ```
 alex-iosandros-app/
 ├── README.md              ← you are here
-├── index.html             ← UI entry point (overwrite freely)
+├── index.html             ← tab shell: the 5 standard pages
 ├── _headers               ← Cloudflare Pages headers config
+├── css/
+│   └── style.css          ← base styling + tab/card/timeline/map styles
+├── js/
+│   └── app.js             ← tab nav + world renderers + renderCharacter/renderTracker hooks
+├── assets/
+│   ├── map.jpg            ← the Iosandros map (Map tab)
+│   └── map_colorfill.jpg  ← lighter-weight alternate map
 ├── data/
-│   ├── data.js            ← shared world lore (read-only reference)
-│   ├── playbook.js        ← house-rules reference
-│   └── regions.json       ← region data
+│   ├── data.js            ← shared world canon (kingdoms, territories, history, prophecies, calendar)
+│   ├── playbook.js        ← house-rules reference (not wired to a page yet)
+│   └── regions.json       ← map region polygons (unused in v1)
 ├── functions/             ← Cloudflare Pages Functions (backend)
 │   ├── _middleware.js     ← runs migrations on cold start
-│   ├── api/               ← REST endpoints
-│   │   ├── health.js
-│   │   ├── people/
-│   │   ├── events/
-│   │   └── state/
-│   └── lib/               ← shared helpers (DO use these)
-│       ├── http.js
-│       ├── people.js
-│       ├── events.js
-│       └── app-state.js
+│   ├── api/               ← REST endpoints (health, people, events, state)
+│   └── lib/               ← shared helpers (DO use these): http, people, events, app-state
 └── migrations/            ← D1 schema, auto-applied on deploy
     ├── index.js           ← aggregates migrations in order
     ├── 0001_initial.js
     ├── 0002_people.js
     └── 0004_stage3and4.js
 ```
+
+### The two render hooks
+
+`js/app.js` builds the three world pages itself. The two personal pages are left for Claude:
+
+- `renderCharacter()` — already fetches the `character` state; fill the body to render the sheet.
+- `renderTracker()` — already fetches the `tracker` state; fill the body with mid-session controls. Save edits with `saveState('tracker', next)`.
+
+Helpers exposed for use in those functions (and any files Claude adds): `window.IO = { $, $$, el, fetchState, saveState, activateTab }`.
 
 ### D1 binding
 
@@ -153,13 +176,13 @@ The D1 database is bound as `env.PLAYER_DB` in every Pages Function. Always go t
 | `_migrations_log` | Tracks which migrations have been applied. Don't touch by hand. |
 | `people` | Party + NPCs. Empty by default — seed via a migration or add through `/api/people`. |
 | `campaign_events` | In-game dated entries. CRUD via `/api/events`. |
-| `app_state` | Key/value singletons (`character`, `notes`, `session`, `date`, `budget`, `advantage`, `kingdomFilter`). Get/set via `/api/state/[key]`. |
+| `app_state` | Key/value singletons (`character`, `tracker`, `notes`, `session`, `date`, `budget`, `advantage`, `kingdomFilter`). Get/set via `/api/state/[key]`. |
 
 The allowed `app_state` keys are gated by `ALLOWED_KEYS` in `functions/lib/app-state.js` — add to that set when you introduce a new key.
 
 ### Adding a new D1 table
 
-1. Create `migrations/000N_<name>.js` exporting `{ id, sql }`. Match the shape of the existing migrations. Use `CREATE TABLE IF NOT EXISTS`.
+1. Create `migrations/000N_<name>.js` exporting `{ id, statements: [...] }` (an array of single SQL statements — see existing migrations). Use `CREATE TABLE IF NOT EXISTS`.
 2. Import it in `migrations/index.js` and append to the `MIGRATIONS` array.
 3. Push to GitHub. On the next deploy, the first request triggers the migration runner, which applies pending migrations in order and records each in `_migrations_log`.
 
@@ -215,3 +238,25 @@ The `ON CONFLICT(key) DO NOTHING` is intentional: once the row exists, future ed
 | Want a new feature | You + Claude |
 
 Cloudflare logs for your site live at [dash.cloudflare.com](https://dash.cloudflare.com) under Workers & Pages → alex-iosandros-app → **Logs**. Brady can grant you read access if you want to debug yourself.
+
+---
+
+## First-time setup (non-coder walkthrough)
+
+Never used a terminal? This is the one-time hump — about 15 minutes. After this, you just chat with Claude.
+
+**Mac:**
+1. Open **Terminal** (press cmd+Space, type "Terminal", Enter).
+2. Install developer tools (gives you `git`): paste `xcode-select --install` and follow the prompt.
+3. Install **Claude Code** from [claude.com/claude-code](https://claude.com/claude-code) and sign in.
+4. Install the **GitHub CLI** for easy sign-in: get [Homebrew](https://brew.sh) first if you don't have it, then `brew install gh`, then `gh auth login` (choose GitHub.com → HTTPS → log in with a browser).
+5. Go to your Desktop: `cd ~/Desktop`
+6. Download your repo: `gh repo clone hbl41/alex-iosandros-app`
+7. Open the folder: `cd alex-iosandros-app`
+8. Put your character sheet in that folder (in Finder: Desktop → alex-iosandros-app).
+9. Start Claude: `claude`
+10. Paste the [Starter Prompt](#starter-prompt).
+
+**Windows:** install [Git for Windows](https://git-scm.com/download/win), the [GitHub CLI](https://cli.github.com/), and Claude Code, then do steps 4–10 in the "Git Bash" terminal.
+
+Stuck on a step? Send Brady a screenshot — this part is fiddly the first time and quick for him to unblock.

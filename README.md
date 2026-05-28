@@ -22,40 +22,49 @@ You don't have to think about any of this — it's the scaffold Brady built:
 
 ## What you do
 
-1. **Get your character sheet** in any format Claude can read — PDF, Google Doc export, photo, screenshot, hand-typed text.
+Recommended path uses **Claude Code** — Claude's command-line tool that reads and writes files in a local repo and commits + pushes directly. No copy-paste, no GitHub web UI.
 
-2. **Open [claude.ai](https://claude.ai)** (Pro $20/mo recommended; free works in shorter sessions). Click **Projects** → **New project** → name it "Rojan Site" or similar.
+1. **Have a GitHub account.** If you don't, sign up at [github.com](https://github.com). DM Brady your username so he can invite you as a collaborator on `hbl41/alex-iosandros-app`. Accept the invite from the email GitHub sends.
 
-3. **Upload context** to the project:
-   - This entire repo as a `.zip` (download from GitHub → "Code" → "Download ZIP"), OR
-   - Just the files Claude needs: `README.md`, `data/data.js`, `migrations/index.js`, all files in `functions/`
-   - Your character sheet
+2. **Install [Claude Code](https://claude.com/claude-code).** Sign in with your Anthropic account — Pro at $20/mo is the most cost-effective; free works for smaller chunks of work.
 
-4. **Paste the Starter Prompt** below into a new chat in that project. Claude will read the scaffold, ask what features you want, and start generating files.
+3. **Get your character sheet** in any format Claude can read — PDF, Google Doc export, screenshot, hand-typed text.
 
-5. **Iterate** — tell Claude what's missing, what to change, what to add. The site reshapes around your asks.
+4. **Clone your repo** somewhere on your computer (you'll need [git](https://git-scm.com/downloads) if you don't have it):
+   ```bash
+   git clone https://github.com/hbl41/alex-iosandros-app.git
+   cd alex-iosandros-app
+   ```
 
-6. **Push your changes to GitHub**:
-   - Open your repo at [github.com/hbl41/alex-iosandros-app](https://github.com/hbl41/alex-iosandros-app)
-   - For each file Claude generated: click **Add file** → **Create new file** (or click the existing file and **Edit**) → paste contents → **Commit changes**
-   - Cloudflare auto-deploys within ~1 minute
-   - Visit `alex.iosandros.com` — your site is live
+5. **Drop your character sheet into that directory** (any filename works — `character.pdf`, `rojan.txt`, etc.).
 
-7. **Ping Brady** if anything on the Cloudflare side breaks. You handle code; Brady handles infrastructure.
+6. **Start Claude Code** in the repo:
+   ```bash
+   claude
+   ```
 
-> Faster option for code-comfortable folks: install [Claude Code](https://claude.com/claude-code), `git clone` the repo, and let Claude Code commit + push directly. Skip the copy-paste dance.
+7. **Paste the [Starter Prompt](#starter-prompt) below** into the Claude Code chat. Claude reads the scaffold + your character sheet, asks what features you want, and generates the code in-place.
+
+8. **Iterate** — tell Claude what's missing, what to change. When you're happy, say "commit and push." Cloudflare auto-deploys within ~1 minute — visit `alex.iosandros.com` to see it.
+
+9. **Ping Brady** if anything on the Cloudflare side breaks. You handle code; Brady handles infrastructure.
+
+> **Alternative paths if you don't want to install Claude Code:**
+> - **GitHub connector in claude.ai** (Pro+): add GitHub as a connector inside a Project, authenticate, grant the repo. Claude reads/writes the repo from the chat. Verify in claude.ai's connector permissions whether the current connector supports commits — that varies by version.
+> - **Manual copy-paste:** open the repo at [github.com/hbl41/alex-iosandros-app](https://github.com/hbl41/alex-iosandros-app), click **Add file** / **Edit** on each file Claude generates, paste, commit. Slowest path; use as last resort.
 
 ---
 
 ## Starter Prompt
 
-Paste this verbatim into a new claude.ai chat inside your project:
+Paste this verbatim into Claude Code after starting it in the repo directory (also works in a claude.ai chat with the repo connected/uploaded):
 
 ````
-I'm a player in a D&D campaign called Iosandros. My character is Rojan
-(see attached character sheet).
+I'm a player in a D&D campaign called Iosandros. My character is Rojan.
+My character sheet is in this directory — find it (look for a .pdf,
+.txt, .md, image, etc.) or ask if you can't.
 
-This Project contains the scaffold for my personal companion site —
+This repo contains the scaffold for my personal companion site —
 already deployed to alex.iosandros.com on Cloudflare Pages with a D1
 database wired up. The architecture is in README.md; read it before
 generating anything.

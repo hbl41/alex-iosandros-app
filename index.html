@@ -25,10 +25,13 @@
       <!-- ===== Character (Claude fills renderCharacter) ===== -->
       <section class="panel active" data-panel="character">
         <div class="empty-state" id="character-empty">
-          <strong>Your character sheet isn't set up yet.</strong>
-          In Claude Code, paste the <strong>Step 2</strong> prompt from the
-          <code>README</code> — Claude reads your character sheet and builds
-          this page.
+          <p class="es-title">Your character sheet isn't set up yet.</p>
+          <p>
+            Open this repo in Claude Code and paste the prompt below — Claude
+            reads your character sheet and builds this page. (First time? See
+            the <code>README</code> to install Claude Code first.)
+          </p>
+          <div class="prompt-box" data-prompt="step2"></div>
         </div>
         <div id="character-content" hidden></div>
       </section>
@@ -36,10 +39,12 @@
       <!-- ===== Play Tracker (Claude fills renderTracker) ===== -->
       <section class="panel" data-panel="tracker">
         <div class="empty-state" id="tracker-empty">
-          <strong>Your play tracker isn't set up yet.</strong>
-          The <strong>Step 2</strong> prompt (see the <code>README</code>)
-          builds this too — current HP, resources, conditions, notes,
-          whatever you track.
+          <p class="es-title">Your play tracker isn't set up yet.</p>
+          <p>
+            The same prompt builds this too — current HP, resources,
+            conditions, notes, whatever you track. Paste it into Claude Code:
+          </p>
+          <div class="prompt-box" data-prompt="step2"></div>
         </div>
         <div id="tracker-content" hidden></div>
       </section>

@@ -262,6 +262,80 @@ async function renderTracker() {
   );
 }
 
+// ---------- copyable Step 2 prompt (shown in the empty states) ----------
+// Keep this in sync with the "Step 2 prompt" in README.md.
+const STEP2_PROMPT = `I'm a player in a D&D campaign called Iosandros. My character is Rojan.
+My character sheet is in this directory — find it (look for a .pdf,
+.txt, .md, image, etc.) or ask if you can't.
+
+This repo is my personal companion site, already deployed to
+alex.iosandros.com on Cloudflare Pages with a D1 database. Read README.md
+first — it explains the architecture.
+
+One-time setup: this repo has a CLAUDE.md with coding guidelines (you
+already auto-load it for this project). Also copy its contents into my
+personal global memory at ~/.claude/CLAUDE.md — create that file if it
+doesn't exist, or merge these rules in without overwriting what's already
+there — so they apply to everything I do with Claude, not just this repo.
+
+The site already has five tabs: Character, Play Tracker, 13 Kingdoms,
+History, Map. The three world pages (Kingdoms, History, Map) are DONE and
+shared across all players — do NOT rebuild them. The tab shell and styling
+in index.html / css/style.css / js/app.js are also done.
+
+YOUR JOB is the two personal pages, driven by my character sheet:
+
+1. Generate migrations/0005_character_seed.js that saves my sheet into the
+   app_state 'character' row (and a starting 'tracker' row). See the
+   "Example: seeding the character sheet" section of README.md for the
+   exact { id, statements: [...] } shape. Append it to migrations/index.js.
+
+2. Fill in the renderCharacter() function in js/app.js. It already fetches
+   my 'character' data — build the sheet UI from it (stats, skills,
+   weapons, abilities, equipment, backstory — whatever my sheet has). Use
+   the el() helper and the existing CSS classes (.kingdom-card, .k-*).
+
+3. Fill in the renderTracker() function in js/app.js. Build controls for
+   what I track mid-session (current HP, resource/ability uses, conditions,
+   a notes box). Persist edits with saveState('tracker', next). Use MY
+   sheet to decide what to track.
+
+Before you start, ASK me:
+- What's on my character sheet (confirm you parsed it correctly)
+- What I want on the Play Tracker specifically
+- Whether I want any extra pages beyond the standard five
+
+Keep migrations idempotent (ON CONFLICT DO NOTHING). Match the existing
+vanilla HTML/JS style — no frameworks. Walk me through big changes before
+making them; one thing at a time.`;
+
+function mountPromptBoxes() {
+  $$(".prompt-box").forEach((box) => {
+    const pre = el("pre", {}, STEP2_PROMPT);
+    const btn = el("button", { class: "btn copy-btn" }, "Copy prompt");
+    btn.addEventListener("click", async () => {
+      let ok = false;
+      try {
+        await navigator.clipboard.writeText(STEP2_PROMPT);
+        ok = true;
+      } catch {
+        // Clipboard API unavailable — fall back to selecting + execCommand,
+        // and leave the text selected so manual copy still works.
+        const range = document.createRange();
+        range.selectNodeContents(pre);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        try { ok = document.execCommand("copy"); } catch {}
+        sel.removeAllRanges();
+      }
+      btn.textContent = ok ? "Copied!" : "Press ⌘/Ctrl-C to copy";
+      setTimeout(() => (btn.textContent = "Copy prompt"), 1800);
+    });
+    box.replaceChildren(btn, pre);
+  });
+}
+
 // expose helpers so Claude-added code (here or in other files) can reuse them
 window.IO = { $, $$, el, fetchState, saveState, activateTab };
 
@@ -269,6 +343,7 @@ window.IO = { $, $$, el, fetchState, saveState, activateTab };
 document.addEventListener("DOMContentLoaded", () => {
   wireTabs();
   $("#refreshBtn")?.addEventListener("click", () => location.reload());
+  mountPromptBoxes();
   renderKingdoms();
   renderHistory();
   initMap();

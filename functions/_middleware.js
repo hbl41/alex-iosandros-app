@@ -4,12 +4,12 @@
 // fresh deploy, it ensures all migrations in migrations/index.js have
 // been applied, recording each in _migrations_log so they don't re-run.
 //
-// Subsequent requests on the same isolate skip the check (the promise is
-// cached in module scope). New isolates pick up where the last left off
-// via _migrations_log.
+// Each migration's statements are batched into a single transaction so
+// either all apply or none — if the batch fails, the log row isn't
+// written and the migration will retry on the next cold start.
 //
-// Migrations must be idempotent — if a migration crashes partway, the
-// log row isn't written, so it'll retry on the next cold start.
+// Any error during middleware is caught and returned as a debuggable
+// JSON 500 instead of crashing the worker.
 
 import { MIGRATIONS } from "../migrations/index.js";
 
@@ -17,7 +17,7 @@ let migrationsPromise = null;
 
 const ensureMigrations = async (db) => {
   await db.exec(
-    `CREATE TABLE IF NOT EXISTS _migrations_log (id TEXT PRIMARY KEY, applied_at TEXT NOT NULL)`
+    "CREATE TABLE IF NOT EXISTS _migrations_log (id TEXT PRIMARY KEY, applied_at TEXT NOT NULL)"
   );
 
   const { results } = await db
@@ -27,37 +27,61 @@ const ensureMigrations = async (db) => {
 
   for (const migration of MIGRATIONS) {
     if (applied.has(migration.id)) continue;
-    try {
-      await db.exec(migration.sql);
-      await db
+
+    const stmts = migration.statements.map((sql) => db.prepare(sql));
+    stmts.push(
+      db
         .prepare(
           "INSERT INTO _migrations_log (id, applied_at) VALUES (?, ?)"
         )
         .bind(migration.id, new Date().toISOString())
-        .run();
+    );
+
+    try {
+      await db.batch(stmts);
       console.log(`migration applied: ${migration.id}`);
     } catch (err) {
       console.error(`migration failed: ${migration.id}`, err);
-      throw err;
+      throw new Error(
+        `migration ${migration.id} failed: ${err.message || err}`
+      );
     }
   }
 };
 
 export const onRequest = async (context) => {
-  const db = context.env.PLAYER_DB;
+  try {
+    const db = context.env.PLAYER_DB;
 
-  if (db && !migrationsPromise) {
-    migrationsPromise = ensureMigrations(db).catch((err) => {
-      // Reset so the next request can retry — otherwise a transient
-      // failure permanently breaks the isolate.
-      migrationsPromise = null;
-      throw err;
-    });
+    if (db && !migrationsPromise) {
+      migrationsPromise = ensureMigrations(db).catch((err) => {
+        // Reset so the next request can retry — otherwise a transient
+        // failure permanently breaks the isolate.
+        migrationsPromise = null;
+        throw err;
+      });
+    }
+
+    if (migrationsPromise) {
+      await migrationsPromise;
+    }
+
+    return context.next();
+  } catch (err) {
+    return new Response(
+      JSON.stringify(
+        {
+          error: "middleware",
+          message: err.message || String(err),
+          stack: err.stack,
+        },
+        null,
+        2
+      ),
+      {
+        status: 500,
+        headers: { "content-type": "application/json; charset=utf-8" },
+      }
+    );
   }
-
-  if (migrationsPromise) {
-    await migrationsPromise;
-  }
-
-  return context.next();
 };

@@ -3,8 +3,8 @@
 
 export default {
   id: "0003_seed_people",
-  sql: `
-    INSERT INTO people (
+  statements: [
+    `INSERT INTO people (
       id, name, category, role, tags, notes,
       is_favorite, sort_order, created_at, updated_at, created_by, updated_by
     ) VALUES
@@ -40,6 +40,6 @@ export default {
     ('csv-037-errkil-orrenfite', 'Errkil Orrenfite', 'NPC', 'First Blood Knight of Iosandros (~700 yrs old); Caradoc''s oldest friend', '["lorenthar", "blood-knight"]', 'MURDERED — throat slashed to spine on Lorenth-flagged boat. Used as bait to lure Caradoc away during the poisoning.', 0, 37, '2026-05-15T05:51:02.066867Z', '2026-05-15T05:51:02.066867Z', 'csv-import', 'csv-import'),
     ('csv-039-aaron-tidewash', 'Aaron Tidewash', 'Unknown', 'Rojan''s oldest friend; spotted at Esmireth docks last session', '["esmireth"]', 'Presence "can''t mean anything good" per Rojan. Possible link to dock-side Errkil murder.', 0, 39, '2026-05-15T05:51:02.066867Z', '2026-05-15T05:51:02.066867Z', 'csv-import', 'csv-import'),
     ('csv-041-felra-brolin', 'Felra Brolin', 'NPC', 'Late High Queen; assassinated in Highrock 1208 SE shortly after Tobin''s birth', '["royalty", "lorenthar", "house-brolin"]', 'Drozvane was blamed but no action taken. Origin of Trask''s reclusion.', 0, 41, '2026-05-15T05:51:02.066867Z', '2026-05-15T05:51:02.066867Z', 'csv-import', 'csv-import')
-    ON CONFLICT(id) DO NOTHING;
-  `,
+    ON CONFLICT(id) DO NOTHING`,
+  ],
 };

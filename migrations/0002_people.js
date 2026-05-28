@@ -3,8 +3,8 @@
 
 export default {
   id: "0002_people",
-  sql: `
-    CREATE TABLE IF NOT EXISTS people (
+  statements: [
+    `CREATE TABLE IF NOT EXISTS people (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       category TEXT NOT NULL DEFAULT 'NPC',
@@ -17,10 +17,9 @@ export default {
       updated_at TEXT NOT NULL,
       created_by TEXT NOT NULL DEFAULT '',
       updated_by TEXT NOT NULL DEFAULT ''
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_people_category ON people(category);
-    CREATE INDEX IF NOT EXISTS idx_people_favorite ON people(is_favorite);
-    CREATE INDEX IF NOT EXISTS idx_people_sort ON people(sort_order, lower(name));
-  `,
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_people_category ON people(category)`,
+    `CREATE INDEX IF NOT EXISTS idx_people_favorite ON people(is_favorite)`,
+    `CREATE INDEX IF NOT EXISTS idx_people_sort ON people(sort_order, lower(name))`,
+  ],
 };

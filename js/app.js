@@ -265,18 +265,14 @@ async function renderTracker() {
 // ---------- copyable Step 2 prompt (shown in the empty states) ----------
 // Keep this in sync with the "Step 2 prompt" in README.md.
 const STEP2_PROMPT = `I'm a player in a D&D campaign called Iosandros. My character is Rojan.
-My character sheet is in this directory — find it (look for a .pdf,
-.txt, .md, image, etc.) or ask if you can't.
+My character sheet and campaign materials are in this repo's PARENT folder
+(a folder called "Iosandros", one level up from where you're running). Read
+all of them: my character sheet, plus any history documents and session-zero
+backstory I put there.
 
 This repo is my personal companion site, already deployed to
 alex.iosandros.com on Cloudflare Pages with a D1 database. Read README.md
 first — it explains the architecture.
-
-One-time setup: this repo has a CLAUDE.md with coding guidelines (you
-already auto-load it for this project). Also copy its contents into my
-personal global memory at ~/.claude/CLAUDE.md — create that file if it
-doesn't exist, or merge these rules in without overwriting what's already
-there — so they apply to everything I do with Claude, not just this repo.
 
 The site already has five tabs: Character, Play Tracker, 13 Kingdoms,
 History, Map. The three world pages (Kingdoms, History, Map) are DONE and

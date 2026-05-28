@@ -18,7 +18,7 @@ You don't have to think about any of this — it's the scaffold Brady built:
 | **Shared world data** | The 13 kingdoms, territories, prophecies, calendar, and in-world history are in `data/data.js` — read-only world canon. No character-specific data is pre-loaded (no NPC seed, no character sheet). |
 | **Backend API** | `/api/people`, `/api/events/`, `/api/state/[key]`, `/api/health` already work. Claude wires the UI to these. |
 | **Five standard pages** | Tab shell + the three world pages (13 Kingdoms, History, Map) are pre-built and identical across every player site. Character + Play Tracker are personalized to your sheet by Claude. |
-| **Coding guidelines** | A `CLAUDE.md` in the repo — Claude Code auto-loads it and works by its rules (think before coding, keep it simple, surgical edits). Step 2 also copies it into your global Claude memory. |
+| **Coding guidelines** | A `CLAUDE.md` in the repo — Claude Code auto-loads it and works by its rules (think before coding, keep it simple, surgical edits). Scoped to this project, not your whole account. |
 
 ---
 
@@ -44,11 +44,11 @@ You'll paste two prompts into Claude — **Step 1** gets you set up, **Step 2** 
 
 1. **GitHub account.** No account? Sign up at [github.com](https://github.com). Then send Brady your username so he can add you as a collaborator on `hbl41/alex-iosandros-app`, and accept the invite GitHub emails you.
 
-2. **Your character sheet** in any format Claude can read — PDF, Google Doc export, screenshot, hand-typed text.
+2. **Make an `Iosandros` folder** on your computer and gather your materials in it: your character sheet, plus any campaign info you have — history documents, your session-zero backstory, notes. Anything you want your site to know about Rojan and the world goes here.
 
-3. **Step 1 — get set up.** Paste the **Step 1 prompt** (below) into [claude.ai](https://claude.ai). Claude walks you through installing Claude Code, connecting GitHub, and downloading your repo — one step at a time, waiting for you at each step.
+3. **Step 1 — get set up.** Paste the **Step 1 prompt** (below) into [claude.ai](https://claude.ai). Claude walks you through installing Claude Code, connecting GitHub, and cloning this repo *into your Iosandros folder* — one step at a time.
 
-4. **Step 2 — build your site.** Step 1 leaves you with Claude Code running inside your repo. Drop your character sheet into that folder and paste the **Step 2 prompt** (below). Claude reads your sheet and builds your Character + Play Tracker pages.
+4. **Step 2 — build your site.** Step 1 leaves you with Claude Code running inside the repo. Paste the **Step 2 prompt** (below). Claude reads your character sheet + notes from the Iosandros folder and builds your Character + Play Tracker pages.
 
 5. **Iterate.** Tell Claude what to change; when you're happy, say "commit and push." Your live site updates in ~1 minute — tap **↻ Refresh** on it to see the change.
 
@@ -70,13 +70,16 @@ Details:
 - My computer: (tell Claude — Mac or Windows)
 - My GitHub repo: hbl41/alex-iosandros-app (I already have a GitHub account
   and Brady added me as a collaborator)
+- I already made a folder called "Iosandros" with my character sheet and
+  campaign notes in it
 
 Walk me through:
 1. Installing Claude Code (claude.com/claude-code) and signing in
 2. Installing git if I don't already have it
 3. Signing in to GitHub from the terminal — the `gh` GitHub CLI is easiest;
    help me install it and run `gh auth login`
-4. Downloading my repo to my Desktop (clone it)
+4. Cloning my repo INTO my "Iosandros" folder, so it ends up at
+   Iosandros/alex-iosandros-app (alongside my character sheet and notes)
 5. Opening the repo folder and starting Claude Code inside it (`claude`)
 
 For each command, show me exactly what to type and what I should see if it
@@ -92,18 +95,14 @@ First drop your character sheet into the repo folder. Then paste this into **Cla
 
 ````
 I'm a player in a D&D campaign called Iosandros. My character is Rojan.
-My character sheet is in this directory — find it (look for a .pdf,
-.txt, .md, image, etc.) or ask if you can't.
+My character sheet and campaign materials are in this repo's PARENT folder
+(a folder called "Iosandros", one level up from where you're running). Read
+all of them: my character sheet, plus any history documents and session-zero
+backstory I put there.
 
 This repo is my personal companion site, already deployed to
 alex.iosandros.com on Cloudflare Pages with a D1 database. Read README.md
 first — it explains the architecture.
-
-One-time setup: this repo has a CLAUDE.md with coding guidelines (you
-already auto-load it for this project). Also copy its contents into my
-personal global memory at ~/.claude/CLAUDE.md — create that file if it
-doesn't exist, or merge these rules in without overwriting what's already
-there — so they apply to everything I do with Claude, not just this repo.
 
 The site already has five tabs: Character, Play Tracker, 13 Kingdoms,
 History, Map. The three world pages (Kingdoms, History, Map) are DONE and
@@ -265,8 +264,8 @@ Cloudflare logs for your site live at [dash.cloudflare.com](https://dash.cloudfl
 
 When a player runs the Step 1 prompt, here's the reference for walking them through it — they are non-technical, so go one step at a time and confirm each worked.
 
-**Mac:** `git` comes with `xcode-select --install`. Easiest GitHub sign-in is the GitHub CLI: install [Homebrew](https://brew.sh) → `brew install gh` → `gh auth login` (GitHub.com → HTTPS → browser). Then `gh repo clone hbl41/alex-iosandros-app`, `cd alex-iosandros-app`, `claude`.
+**Mac:** `git` comes with `xcode-select --install`. Easiest GitHub sign-in is the GitHub CLI: install [Homebrew](https://brew.sh) → `brew install gh` → `gh auth login` (GitHub.com → HTTPS → browser). Then `cd` into their **Iosandros** folder, `gh repo clone hbl41/alex-iosandros-app`, `cd alex-iosandros-app`, `claude`.
 
-**Windows:** [Git for Windows](https://git-scm.com/download/win) + [GitHub CLI](https://cli.github.com/) + Claude Code, then the same `gh auth login` / clone / `claude` flow in Git Bash.
+**Windows:** [Git for Windows](https://git-scm.com/download/win) + [GitHub CLI](https://cli.github.com/) + Claude Code, then the same `gh auth login` / clone / `claude` flow in Git Bash, cloning inside the Iosandros folder.
 
-The player should end Step 1 with Claude Code running inside their cloned repo, ready to paste the Step 2 prompt.
+The player should end Step 1 with Claude Code running inside their cloned repo (at `Iosandros/alex-iosandros-app`), with their character sheet and notes one level up in the Iosandros folder — ready to paste the Step 2 prompt.

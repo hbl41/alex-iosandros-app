@@ -268,6 +268,7 @@ window.IO = { $, $$, el, fetchState, saveState, activateTab };
 // ---------- boot ----------
 document.addEventListener("DOMContentLoaded", () => {
   wireTabs();
+  $("#refreshBtn")?.addEventListener("click", () => location.reload());
   renderKingdoms();
   renderHistory();
   initMap();

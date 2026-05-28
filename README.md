@@ -18,6 +18,7 @@ You don't have to think about any of this — it's the scaffold Brady built:
 | **Shared world data** | The 13 kingdoms, territories, prophecies, calendar, and in-world history are in `data/data.js` — read-only world canon. No character-specific data is pre-loaded (no NPC seed, no character sheet). |
 | **Backend API** | `/api/people`, `/api/events/`, `/api/state/[key]`, `/api/health` already work. Claude wires the UI to these. |
 | **Five standard pages** | Tab shell + the three world pages (13 Kingdoms, History, Map) are pre-built and identical across every player site. Character + Play Tracker are personalized to your sheet by Claude. |
+| **Coding guidelines** | A `CLAUDE.md` in the repo — Claude Code auto-loads it and works by its rules (think before coding, keep it simple, surgical edits). Step 2 also copies it into your global Claude memory. |
 
 ---
 
@@ -97,6 +98,12 @@ My character sheet is in this directory — find it (look for a .pdf,
 This repo is my personal companion site, already deployed to
 alex.iosandros.com on Cloudflare Pages with a D1 database. Read README.md
 first — it explains the architecture.
+
+One-time setup: this repo has a CLAUDE.md with coding guidelines (you
+already auto-load it for this project). Also copy its contents into my
+personal global memory at ~/.claude/CLAUDE.md — create that file if it
+doesn't exist, or merge these rules in without overwriting what's already
+there — so they apply to everything I do with Claude, not just this repo.
 
 The site already has five tabs: Character, Play Tracker, 13 Kingdoms,
 History, Map. The three world pages (Kingdoms, History, Map) are DONE and

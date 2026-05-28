@@ -157,8 +157,7 @@ alex-iosandros-app/
 ├── js/
 │   └── app.js             ← tab nav + world renderers + renderCharacter/renderTracker hooks
 ├── assets/
-│   ├── map.jpg            ← the Iosandros map (Map tab)
-│   └── map_colorfill.jpg  ← lighter-weight alternate map
+│   └── map.jpg            ← the Iosandros map (Map tab)
 ├── data/
 │   ├── data.js            ← shared world canon (kingdoms, territories, history, prophecies, calendar)
 │   ├── playbook.js        ← house-rules reference (not wired to a page yet)

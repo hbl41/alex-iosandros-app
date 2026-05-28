@@ -24,7 +24,7 @@ You don't have to think about any of this — it's the scaffold Brady built:
 
 Recommended path uses **Claude Code** — Claude's command-line tool that reads and writes files in a local repo and commits + pushes directly. No copy-paste, no GitHub web UI.
 
-1. **Have a GitHub account.** If you don't, sign up at [github.com](https://github.com). DM Brady your username so he can invite you as a collaborator on `hbl41/alex-iosandros-app`. Accept the invite from the email GitHub sends.
+1. **Have a GitHub account.** If you don't, sign up at [github.com](https://github.com). Send Brady your username so he can invite you as a collaborator on `hbl41/alex-iosandros-app`. Accept the invite from the email GitHub sends.
 
 2. **Install [Claude Code](https://claude.com/claude-code).** Sign in with your Anthropic account — Pro at $20/mo is the most cost-effective; free works for smaller chunks of work.
 

@@ -39,42 +39,55 @@ The two blank pages show a "not set up yet" message until you run Claude. The sh
 
 ## What you do
 
-Recommended path uses **Claude Code** — Claude's command-line tool that reads and writes files in a local repo and commits + pushes directly. No copy-paste, no GitHub web UI. (Never used a terminal? Jump to [First-time setup](#first-time-setup-non-coder-walkthrough) for a hand-held version.)
+You'll paste two prompts into Claude — **Step 1** gets you set up, **Step 2** builds your site. Claude handles the technical parts; you mostly answer its questions. You're not expected to know any of this already.
 
-1. **Have a GitHub account.** If you don't, sign up at [github.com](https://github.com). Send Brady your username so he can invite you as a collaborator on `hbl41/alex-iosandros-app`. Accept the invite from the email GitHub sends.
+1. **GitHub account.** No account? Sign up at [github.com](https://github.com). Then send Brady your username so he can add you as a collaborator on `hbl41/alex-iosandros-app`, and accept the invite GitHub emails you.
 
-2. **Install [Claude Code](https://claude.com/claude-code).** Sign in with your Anthropic account — Pro at $20/mo is the most cost-effective; free works for smaller chunks of work.
+2. **Your character sheet** in any format Claude can read — PDF, Google Doc export, screenshot, hand-typed text.
 
-3. **Get your character sheet** in any format Claude can read — PDF, Google Doc export, screenshot, hand-typed text.
+3. **Step 1 — get set up.** Paste the **Step 1 prompt** (below) into [claude.ai](https://claude.ai). Claude walks you through installing Claude Code, connecting GitHub, and downloading your repo — one step at a time, waiting for you at each step.
 
-4. **Clone your repo** somewhere on your computer (you'll need [git](https://git-scm.com/downloads) if you don't have it):
-   ```bash
-   git clone https://github.com/hbl41/alex-iosandros-app.git
-   cd alex-iosandros-app
-   ```
+4. **Step 2 — build your site.** Step 1 leaves you with Claude Code running inside your repo. Drop your character sheet into that folder and paste the **Step 2 prompt** (below). Claude reads your sheet and builds your Character + Play Tracker pages.
 
-5. **Drop your character sheet into that directory** (any filename works — `character.pdf`, `rojan.txt`, etc.).
+5. **Iterate.** Tell Claude what to change; when you're happy, say "commit and push." Your live site updates in ~1 minute — tap **↻ Refresh** on it to see the change.
 
-6. **Start Claude Code** in the repo:
-   ```bash
-   claude
-   ```
-
-7. **Paste the [Starter Prompt](#starter-prompt) below** into the Claude Code chat. Claude reads the scaffold + your character sheet, asks what features you want, and generates the code in-place.
-
-8. **Iterate** — tell Claude what's missing, what to change. When you're happy, say "commit and push." Cloudflare auto-deploys within ~1 minute — visit `alex.iosandros.com` to see it.
-
-9. **Ping Brady** if anything on the Cloudflare side breaks. You handle code; Brady handles infrastructure.
-
-> **Alternative paths if you don't want to install Claude Code:**
-> - **GitHub connector in claude.ai** (Pro+): add GitHub as a connector inside a Project, authenticate, grant the repo. Claude reads/writes the repo from the chat. Verify in claude.ai's connector permissions whether the current connector supports commits — that varies by version.
-> - **Manual copy-paste:** open the repo at [github.com/hbl41/alex-iosandros-app](https://github.com/hbl41/alex-iosandros-app), click **Add file** / **Edit** on each file Claude generates, paste, commit. Slowest path; use as last resort.
+6. **Something broken on the site itself?** Send Brady a screenshot — anything Cloudflare-side is his to fix, not yours.
 
 ---
 
-## Starter Prompt
+## Step 1 prompt — get set up
 
-Paste this verbatim into Claude Code after starting it in the repo directory (also works in a claude.ai chat with the repo connected/uploaded):
+Paste this into a new chat at [claude.ai](https://claude.ai). (This is the **website**, not Claude Code — you can't run Claude Code until this step installs it.)
+
+````
+I need to set up "Claude Code" (Anthropic's command-line tool) and connect
+it to GitHub so it can edit my website's code. I am NOT technical — explain
+everything simply and go ONE STEP AT A TIME, waiting for me to confirm each
+step worked before giving me the next.
+
+Details:
+- My computer: (tell Claude — Mac or Windows)
+- My GitHub repo: hbl41/alex-iosandros-app (I already have a GitHub account
+  and Brady added me as a collaborator)
+
+Walk me through:
+1. Installing Claude Code (claude.com/claude-code) and signing in
+2. Installing git if I don't already have it
+3. Signing in to GitHub from the terminal — the `gh` GitHub CLI is easiest;
+   help me install it and run `gh auth login`
+4. Downloading my repo to my Desktop (clone it)
+5. Opening the repo folder and starting Claude Code inside it (`claude`)
+
+For each command, show me exactly what to type and what I should see if it
+worked. If I hit an error, help me fix it before moving on. By the end I
+should have Claude Code running inside my repo, ready for Step 2.
+````
+
+---
+
+## Step 2 prompt — build your site
+
+First drop your character sheet into the repo folder. Then paste this into **Claude Code** (running in your repo from the end of Step 1):
 
 ````
 I'm a player in a D&D campaign called Iosandros. My character is Rojan.
@@ -241,22 +254,12 @@ Cloudflare logs for your site live at [dash.cloudflare.com](https://dash.cloudfl
 
 ---
 
-## First-time setup (non-coder walkthrough)
+## Setup help (for Claude, in Step 1)
 
-Never used a terminal? This is the one-time hump — about 15 minutes. After this, you just chat with Claude.
+When a player runs the Step 1 prompt, here's the reference for walking them through it — they are non-technical, so go one step at a time and confirm each worked.
 
-**Mac:**
-1. Open **Terminal** (press cmd+Space, type "Terminal", Enter).
-2. Install developer tools (gives you `git`): paste `xcode-select --install` and follow the prompt.
-3. Install **Claude Code** from [claude.com/claude-code](https://claude.com/claude-code) and sign in.
-4. Install the **GitHub CLI** for easy sign-in: get [Homebrew](https://brew.sh) first if you don't have it, then `brew install gh`, then `gh auth login` (choose GitHub.com → HTTPS → log in with a browser).
-5. Go to your Desktop: `cd ~/Desktop`
-6. Download your repo: `gh repo clone hbl41/alex-iosandros-app`
-7. Open the folder: `cd alex-iosandros-app`
-8. Put your character sheet in that folder (in Finder: Desktop → alex-iosandros-app).
-9. Start Claude: `claude`
-10. Paste the [Starter Prompt](#starter-prompt).
+**Mac:** `git` comes with `xcode-select --install`. Easiest GitHub sign-in is the GitHub CLI: install [Homebrew](https://brew.sh) → `brew install gh` → `gh auth login` (GitHub.com → HTTPS → browser). Then `gh repo clone hbl41/alex-iosandros-app`, `cd alex-iosandros-app`, `claude`.
 
-**Windows:** install [Git for Windows](https://git-scm.com/download/win), the [GitHub CLI](https://cli.github.com/), and Claude Code, then do steps 4–10 in the "Git Bash" terminal.
+**Windows:** [Git for Windows](https://git-scm.com/download/win) + [GitHub CLI](https://cli.github.com/) + Claude Code, then the same `gh auth login` / clone / `claude` flow in Git Bash.
 
-Stuck on a step? Send Brady a screenshot — this part is fiddly the first time and quick for him to unblock.
+The player should end Step 1 with Claude Code running inside their cloned repo, ready to paste the Step 2 prompt.

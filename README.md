@@ -46,9 +46,9 @@ You'll paste two prompts into Claude — **Step 1** gets you set up, **Step 2** 
 
 2. **Make an `Iosandros` folder** on your computer and gather your materials in it: your character sheet, plus any campaign info you have — history documents, your session-zero backstory, notes. Anything you want your site to know about Rojan and the world goes here.
 
-3. **Step 1 — get set up.** Paste the **Step 1 prompt** (below) into [claude.ai](https://claude.ai). Claude walks you through installing Claude Code, connecting GitHub, and cloning this repo *into your Iosandros folder* — one step at a time.
+3. **Step 1 — get set up.** Install Claude Code from [claude.com/claude-code](https://claude.com/claude-code) (a command or two — follow their page), run it in your Iosandros folder, and paste the **Step 1 prompt** (below). Claude Code connects GitHub, clones this repo into the folder, and confirms you can push — one step at a time.
 
-4. **Step 2 — build your site.** Step 1 leaves you with Claude Code running inside the repo. Paste the **Step 2 prompt** (below). Claude reads your character sheet + notes from the Iosandros folder and builds your Character + Play Tracker pages.
+4. **Step 2 — build your site.** Run Claude Code inside the repo and paste the **Step 2 prompt** (below). Claude reads your character sheet + notes from the Iosandros folder and builds your Character + Play Tracker pages.
 
 5. **Step 3 — refine & expand (ongoing).** From here it's just conversation with Claude in the repo: restyle it (colors, fonts, the whole look), change the layout, add features, or add whole new pages — inventory, an NPC tracker, a quest log, whatever you want. No fixed prompt for this; just ask. When you're happy with a change, say "commit and push," then tap **↻ Refresh** to see it live.
 
@@ -58,37 +58,30 @@ You'll paste two prompts into Claude — **Step 1** gets you set up, **Step 2** 
 
 ## Step 1 prompt — get set up
 
-Paste this into a new chat at [claude.ai](https://claude.ai). (This is the **website**, not Claude Code — you can't run Claude Code until this step installs it.)
+First install Claude Code from [claude.com/claude-code](https://claude.com/claude-code) — a command or two, follow their page. Then open a terminal in your **Iosandros** folder, run `claude`, and paste this:
 
 ````
-I need to set up "Claude Code" (Anthropic's command-line tool) and connect
-it to GitHub so it can edit my website's code AND push my changes back. I am
-NOT technical — explain everything simply and go ONE STEP AT A TIME, waiting
-for me to confirm each step worked before the next.
+I just installed Claude Code and I'm running you inside a folder called
+"Iosandros" that has my character sheet and campaign notes in it. I'm NOT
+technical — go ONE STEP AT A TIME and wait for me to confirm each step
+worked before the next.
 
-Details:
-- My computer: (tell Claude — Mac or Windows)
-- My GitHub repo: hbl41/alex-iosandros-app (I have a GitHub account and Brady
-  added me as a collaborator)
-- I already made a folder called "Iosandros" with my character sheet and
-  campaign notes in it
+Get me set up to edit and push my website's code:
+1. Check whether I have git and the GitHub CLI (`gh`); help me install
+   whatever's missing
+2. Sign me in to GitHub — give me the `gh auth login` command to run myself
+   (it's interactive): choose GitHub.com -> HTTPS -> say YES to
+   "authenticate Git" so I can push
+3. Set my git identity: `git config --global user.name` and
+   `git config --global user.email` (my name + the email on my GitHub)
+4. Clone hbl41/alex-iosandros-app into this folder (Brady added me as a
+   collaborator), so it lands at Iosandros/alex-iosandros-app
+5. Confirm pushing works: cd into the repo and run `git push` — it should
+   say "Everything up-to-date"
 
-Walk me through:
-1. Installing Claude Code (claude.com/claude-code) and signing in
-2. Installing git if I don't already have it
-3. Installing the GitHub CLI (`gh`) and running `gh auth login` — when it
-   asks "Authenticate Git with your GitHub credentials?", say YES. (This is
-   what lets me push.)
-4. Setting my git identity so commits work: `git config --global user.name`
-   and `git config --global user.email` (my name + the email on my GitHub)
-5. Cloning my repo INTO my "Iosandros" folder, so it ends up at
-   Iosandros/alex-iosandros-app (alongside my character sheet and notes)
-6. Starting Claude Code in the repo (`claude`), then confirming I can push by
-   running `git push` — it should say "Everything up-to-date"
-
-For each command, show me exactly what to type and what success looks like.
-If I hit an error, help me fix it before moving on. By the end I should have
-Claude Code running in my repo and a confirmed push — ready for Step 2.
+Show me exactly what to type at each step and fix any errors before moving
+on. When we're done, tell me to run you inside the alex-iosandros-app folder
+and paste my Step 2 prompt there.
 ````
 
 ---

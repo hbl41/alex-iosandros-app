@@ -50,7 +50,7 @@ You'll paste two prompts into Claude — **Step 1** gets you set up, **Step 2** 
 
 4. **Step 2 — build your site.** Step 1 leaves you with Claude Code running inside the repo. Paste the **Step 2 prompt** (below). Claude reads your character sheet + notes from the Iosandros folder and builds your Character + Play Tracker pages.
 
-5. **Iterate.** Tell Claude what to change; when you're happy, say "commit and push." Your live site updates in ~1 minute — tap **↻ Refresh** on it to see the change.
+5. **Step 3 — refine & expand (ongoing).** From here it's just conversation with Claude in the repo: restyle it (colors, fonts, the whole look), change the layout, add features, or add whole new pages — inventory, an NPC tracker, a quest log, whatever you want. No fixed prompt for this; just ask. When you're happy with a change, say "commit and push," then tap **↻ Refresh** to see it live.
 
 6. **Something broken on the site itself?** Send Brady a screenshot — anything Cloudflare-side is his to fix, not yours.
 

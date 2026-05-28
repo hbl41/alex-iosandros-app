@@ -13,7 +13,7 @@ You don't have to think about any of this — it's the scaffold Brady built:
 | Piece | What it does |
 |---|---|
 | **Cloudflare Pages** | Hosts the site at `alex.iosandros.com`. Auto-deploys every time you push to GitHub. |
-| **D1 database** (binding `PLAYER_DB`) | Persistent storage. Everything you write to the site survives. |
+| **D1 database** (binding `PLAYER_DB`) | Server-side persistent storage — no localStorage. Changes like HP, FP, and notes save between sessions and across devices (phone, laptop, iPad — same data). |
 | **Auto-migration runner** | When Claude adds a new table, the runner applies it on first request after deploy. You don't run anything by hand. |
 | **Shared world data** | The 13 kingdoms, prophecies, calendar, and history are in `data/data.js`. The party + named NPCs are seeded in the `people` table. |
 | **Backend API** | `/api/people`, `/api/events/`, `/api/state/[key]`, `/api/health` already work. Claude wires the UI to these. |

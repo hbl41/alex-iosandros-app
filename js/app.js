@@ -264,46 +264,21 @@ async function renderTracker() {
 
 // ---------- copyable Step 2 prompt (shown in the empty states) ----------
 // Keep this in sync with the "Step 2 prompt" in README.md.
-const STEP2_PROMPT = `I'm a player in a D&D campaign called Iosandros. My character is Rojan.
-My character sheet and campaign materials are in this repo's PARENT folder
-(a folder called "Iosandros", one level up from where you're running). Read
-all of them: my character sheet, plus any history documents and session-zero
-backstory I put there.
+const STEP2_PROMPT = `I'm a player in the Iosandros D&D campaign — my character is Rojan. My
+character sheet and any campaign notes are in this repo's parent folder (the
+"Iosandros" folder, one level up). Read them.
 
-This repo is my personal companion site, already deployed to
-alex.iosandros.com on Cloudflare Pages with a D1 database. Read README.md
-first — it explains the architecture.
+This repo is my companion site, already deployed. Read README.md and
+CLAUDE.md first — they explain how it's built and the ground rules. The
+"two render hooks" and "Example: seeding the character sheet" sections of
+README.md show exactly what to build.
 
-The site already has five tabs: Character, Play Tracker, 13 Kingdoms,
-History, Map. The three world pages (Kingdoms, History, Map) are DONE and
-shared across all players — do NOT rebuild them. The tab shell and styling
-in index.html / css/style.css / js/app.js are also done.
+Your job: build my two personal pages — Character and Play Tracker — from my
+character sheet. The other three tabs (13 Kingdoms, History, Map) are already
+done; leave them alone.
 
-YOUR JOB is the two personal pages, driven by my character sheet:
-
-1. Generate migrations/0005_character_seed.js that saves my sheet into the
-   app_state 'character' row (and a starting 'tracker' row). See the
-   "Example: seeding the character sheet" section of README.md for the
-   exact { id, statements: [...] } shape. Append it to migrations/index.js.
-
-2. Fill in the renderCharacter() function in js/app.js. It already fetches
-   my 'character' data — build the sheet UI from it (stats, skills,
-   weapons, abilities, equipment, backstory — whatever my sheet has). Use
-   the el() helper and the existing CSS classes (.kingdom-card, .k-*).
-
-3. Fill in the renderTracker() function in js/app.js. Build controls for
-   what I track mid-session (current HP, resource/ability uses, conditions,
-   a notes box). Persist edits with saveState('tracker', next). Use MY
-   sheet to decide what to track.
-
-Before you start, ASK me:
-- What's on my character sheet (confirm you parsed it correctly)
-- What I want on the Play Tracker specifically
-- Whether I want any extra pages beyond the standard five
-
-Keep migrations idempotent (ON CONFLICT DO NOTHING). Match the existing
-vanilla HTML/JS style — no frameworks. Walk me through big changes before
-making them; one thing at a time.`;
+Start by asking me what I want on each page. Then build one piece at a time,
+showing me as you go. When I'm happy, commit and push.`;
 
 function mountPromptBoxes() {
   $$(".prompt-box").forEach((box) => {

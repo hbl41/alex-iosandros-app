@@ -62,81 +62,57 @@ Paste this into a new chat at [claude.ai](https://claude.ai). (This is the **web
 
 ````
 I need to set up "Claude Code" (Anthropic's command-line tool) and connect
-it to GitHub so it can edit my website's code. I am NOT technical — explain
-everything simply and go ONE STEP AT A TIME, waiting for me to confirm each
-step worked before giving me the next.
+it to GitHub so it can edit my website's code AND push my changes back. I am
+NOT technical — explain everything simply and go ONE STEP AT A TIME, waiting
+for me to confirm each step worked before the next.
 
 Details:
 - My computer: (tell Claude — Mac or Windows)
-- My GitHub repo: hbl41/alex-iosandros-app (I already have a GitHub account
-  and Brady added me as a collaborator)
+- My GitHub repo: hbl41/alex-iosandros-app (I have a GitHub account and Brady
+  added me as a collaborator)
 - I already made a folder called "Iosandros" with my character sheet and
   campaign notes in it
 
 Walk me through:
 1. Installing Claude Code (claude.com/claude-code) and signing in
 2. Installing git if I don't already have it
-3. Signing in to GitHub from the terminal — the `gh` GitHub CLI is easiest;
-   help me install it and run `gh auth login`
-4. Cloning my repo INTO my "Iosandros" folder, so it ends up at
+3. Installing the GitHub CLI (`gh`) and running `gh auth login` — when it
+   asks "Authenticate Git with your GitHub credentials?", say YES. (This is
+   what lets me push.)
+4. Setting my git identity so commits work: `git config --global user.name`
+   and `git config --global user.email` (my name + the email on my GitHub)
+5. Cloning my repo INTO my "Iosandros" folder, so it ends up at
    Iosandros/alex-iosandros-app (alongside my character sheet and notes)
-5. Opening the repo folder and starting Claude Code inside it (`claude`)
+6. Starting Claude Code in the repo (`claude`), then confirming I can push by
+   running `git push` — it should say "Everything up-to-date"
 
-For each command, show me exactly what to type and what I should see if it
-worked. If I hit an error, help me fix it before moving on. By the end I
-should have Claude Code running inside my repo, ready for Step 2.
+For each command, show me exactly what to type and what success looks like.
+If I hit an error, help me fix it before moving on. By the end I should have
+Claude Code running in my repo and a confirmed push — ready for Step 2.
 ````
 
 ---
 
 ## Step 2 prompt — build your site
 
-First drop your character sheet into the repo folder. Then paste this into **Claude Code** (running in your repo from the end of Step 1):
+Make sure your character sheet and notes are in the Iosandros folder (one level up from the repo). Then paste this into **Claude Code** (running in your repo from the end of Step 1):
 
 ````
-I'm a player in a D&D campaign called Iosandros. My character is Rojan.
-My character sheet and campaign materials are in this repo's PARENT folder
-(a folder called "Iosandros", one level up from where you're running). Read
-all of them: my character sheet, plus any history documents and session-zero
-backstory I put there.
+I'm a player in the Iosandros D&D campaign — my character is Rojan. My
+character sheet and any campaign notes are in this repo's parent folder (the
+"Iosandros" folder, one level up). Read them.
 
-This repo is my personal companion site, already deployed to
-alex.iosandros.com on Cloudflare Pages with a D1 database. Read README.md
-first — it explains the architecture.
+This repo is my companion site, already deployed. Read README.md and
+CLAUDE.md first — they explain how it's built and the ground rules. The
+"two render hooks" and "Example: seeding the character sheet" sections of
+README.md show exactly what to build.
 
-The site already has five tabs: Character, Play Tracker, 13 Kingdoms,
-History, Map. The three world pages (Kingdoms, History, Map) are DONE and
-shared across all players — do NOT rebuild them. The tab shell and styling
-in index.html / css/style.css / js/app.js are also done.
+Your job: build my two personal pages — Character and Play Tracker — from my
+character sheet. The other three tabs (13 Kingdoms, History, Map) are already
+done; leave them alone.
 
-YOUR JOB is the two personal pages, driven by my character sheet:
-
-1. Generate migrations/0005_character_seed.js that saves my sheet into the
-   app_state 'character' row (and a starting 'tracker' row). See the
-   "Example: seeding the character sheet" section of README.md for the
-   exact { id, statements: [...] } shape. Append it to migrations/index.js.
-
-2. Fill in the renderCharacter() function in js/app.js. It already fetches
-   my 'character' data — build the sheet UI from it (stats, skills,
-   weapons, abilities, equipment, backstory — whatever my sheet has). Use
-   the el() helper and the existing CSS classes (.kingdom-card, .k-*).
-
-3. Fill in the renderTracker() function in js/app.js. Build controls for
-   what I track mid-session (current HP, resource/ability uses, conditions,
-   a notes box). Persist edits with saveState('tracker', next). Use MY
-   sheet to decide what to track — don't assume another character's
-   resources (no Ring of Discernment / Negotiation Budget unless I have
-   them).
-
-Before you start, ASK me:
-- What's on my character sheet (confirm you parsed it correctly)
-- What I want on the Play Tracker specifically
-- Whether I want any extra pages beyond the standard five (inventory, an
-  NPC roster via the existing /api/people endpoints, quest log, etc.)
-
-Keep migrations idempotent (ON CONFLICT DO NOTHING). Match the existing
-vanilla HTML/JS style — no frameworks. Walk me through big changes before
-making them; one thing at a time.
+Start by asking me what I want on each page. Then build one piece at a time,
+showing me as you go. When I'm happy, commit and push.
 ````
 
 ---
@@ -263,8 +239,8 @@ Cloudflare logs for your site live at [dash.cloudflare.com](https://dash.cloudfl
 
 When a player runs the Step 1 prompt, here's the reference for walking them through it — they are non-technical, so go one step at a time and confirm each worked.
 
-**Mac:** `git` comes with `xcode-select --install`. Easiest GitHub sign-in is the GitHub CLI: install [Homebrew](https://brew.sh) → `brew install gh` → `gh auth login` (GitHub.com → HTTPS → browser). Then `cd` into their **Iosandros** folder, `gh repo clone hbl41/alex-iosandros-app`, `cd alex-iosandros-app`, `claude`.
+**Mac:** `git` comes with `xcode-select --install`. Easiest GitHub sign-in is the GitHub CLI: install [Homebrew](https://brew.sh) → `brew install gh` → `gh auth login` (GitHub.com → HTTPS → **say YES to "authenticate Git"** → browser). Set their identity: `git config --global user.name "..."` and `git config --global user.email "..."`. Then `cd` into their **Iosandros** folder, `gh repo clone hbl41/alex-iosandros-app`, `cd alex-iosandros-app`, `claude`.
 
-**Windows:** [Git for Windows](https://git-scm.com/download/win) + [GitHub CLI](https://cli.github.com/) + Claude Code, then the same `gh auth login` / clone / `claude` flow in Git Bash, cloning inside the Iosandros folder.
+**Windows:** [Git for Windows](https://git-scm.com/download/win) + [GitHub CLI](https://cli.github.com/) + Claude Code, then the same `gh auth login` (authenticate Git: yes) + `git config` identity + clone + `claude` flow in Git Bash, inside the Iosandros folder.
 
-The player should end Step 1 with Claude Code running inside their cloned repo (at `Iosandros/alex-iosandros-app`), with their character sheet and notes one level up in the Iosandros folder — ready to paste the Step 2 prompt.
+Confirm push access with `git push` — it should say "Everything up-to-date" (proves their credentials work). The player should end Step 1 with Claude Code running in their cloned repo (`Iosandros/alex-iosandros-app`), able to push, with their character sheet + notes one level up — ready for the Step 2 prompt.

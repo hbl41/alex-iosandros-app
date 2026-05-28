@@ -26,35 +26,30 @@
       <section class="panel active" data-panel="character">
         <div class="empty-state" id="character-empty">
           <p class="es-title">Your character sheet isn't set up yet.</p>
-          <p>Here's everything you need to do to build this page:</p>
-          <ol class="setup-steps">
-            <li>
-              On your computer, make a folder called <strong>Iosandros</strong>.
-              Put your character sheet in it — plus any campaign info you have:
-              history documents, your session-zero backstory, notes, anything
-              you want your site to know about Rojan and the world.
-            </li>
-            <li>
-              Paste the <strong>Step 1</strong> prompt from the
-              <code>README</code> into <a href="https://claude.ai">claude.ai</a>.
-              It walks you through installing Claude Code and cloning this repo
-              into your Iosandros folder.
-            </li>
-            <li>
-              With Claude Code running in the repo, paste the prompt below.
-              Claude reads your character sheet + notes and builds your
-              Character and Play Tracker pages.
-            </li>
-            <li>
-              When Claude finishes and pushes, tap <strong>↻ Refresh</strong>
-              up top to see it.
-            </li>
-            <li>
-              <strong>Step 3 (ongoing):</strong> keep chatting with Claude to
-              refine it — restyle it, change the layout, add features or new
-              pages. There's no fixed prompt; just ask. It never really ends.
-            </li>
-          </ol>
+          <p>Building your site happens in three steps:</p>
+          <div class="setup-steps">
+            <p>
+              <strong>Step 1 — Set up.</strong> Make a folder called
+              <strong>Iosandros</strong> and put your character sheet in it,
+              plus any campaign info (history documents, your session-zero
+              backstory, notes). Then paste the <strong>Step 1 prompt</strong>
+              from the <code>README</code> into
+              <a href="https://claude.ai">claude.ai</a> — it installs Claude
+              Code, connects GitHub, and clones this repo into your Iosandros
+              folder.
+            </p>
+            <p>
+              <strong>Step 2 — Build.</strong> With Claude Code running in the
+              repo, paste the prompt below. Claude reads your sheet and builds
+              this Character page and your Play Tracker. When it pushes, tap
+              <strong>↻ Refresh</strong> up top.
+            </p>
+            <p>
+              <strong>Step 3 — Refine (ongoing).</strong> Keep chatting with
+              Claude to restyle it, change the layout, or add features and new
+              pages. No fixed prompt — just ask.
+            </p>
+          </div>
           <div class="prompt-box" data-prompt="step2"></div>
         </div>
         <div id="character-content" hidden></div>

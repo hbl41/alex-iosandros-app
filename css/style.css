@@ -1,180 +1,27 @@
 /* ============================================================
-   Iosandros player companion — base styles
-   Vanilla CSS. Tokens up top; Claude can re-theme freely.
+   Iosandros player companion — v0
+
+   Intentionally UNSTYLED. The look is the player's choice — ask
+   Claude to style it however you want. Only functional rules
+   live here: tab show/hide, and the map pan/zoom window.
+
+   The markup keeps class hooks (.kingdom-card, .timeline-entry,
+   .tab, etc.) so Claude has things to target when you style it.
    ============================================================ */
 
-:root {
-  --bg: #15130f;
-  --bg-raised: #1f1c16;
-  --bg-card: #262219;
-  --border: #3a342a;
-  --text: #ece6d8;
-  --text-dim: #a59c89;
-  --accent: #c9a24b;
-  --accent-dim: #8a7536;
-  --danger: #c4543f;
-  --radius: 10px;
-  --space: 16px;
-  --maxw: 960px;
-  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font);
-  line-height: 1.55;
-}
-
-a { color: var(--accent); }
-
-/* ---------- top bar + tabs ---------- */
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--bg-raised);
-  border-bottom: 1px solid var(--border);
-}
-
-.brand {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 14px var(--space) 6px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.brand .sub { color: var(--text-dim); font-weight: 400; }
-
-.tabs {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--space) 8px;
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-}
-
-.tab {
-  flex: 0 0 auto;
-  background: transparent;
-  color: var(--text-dim);
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 8px 12px;
-  font-size: 0.95rem;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.tab:hover { color: var(--text); }
-.tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-  font-weight: 600;
-}
-
-/* ---------- panels ---------- */
-main { max-width: var(--maxw); margin: 0 auto; padding: var(--space); }
+/* tab panels: only the active one is visible */
 .panel { display: none; }
-.panel.active { display: block; animation: fade 0.15s ease; }
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.panel.active { display: block; }
 
-h2 { font-size: 1.1rem; color: var(--accent); margin: 24px 0 12px; }
-
-/* ---------- empty state (Character / Tracker before setup) ---------- */
-.empty-state {
-  background: var(--bg-card);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 32px 24px;
-  text-align: center;
-  color: var(--text-dim);
-}
-.empty-state strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 1.05rem; }
-.empty-state code {
-  background: var(--bg);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--accent);
-}
-
-/* ---------- kingdom / territory cards ---------- */
-.kingdom-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
-}
-.kingdom-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-}
-.k-name { font-size: 1.05rem; font-weight: 700; }
-.k-house { color: var(--accent); font-size: 0.85rem; margin-bottom: 8px; }
-.k-meta { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 8px; }
-.k-meta span { display: inline-block; margin-right: 12px; }
-.k-desc { font-size: 0.9rem; }
-.k-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-.k-tag {
-  font-size: 0.72rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 2px 9px;
-  color: var(--text-dim);
-}
-
-/* ---------- history timeline ---------- */
-.timeline { border-left: 2px solid var(--border); margin-left: 8px; }
-.timeline-entry { position: relative; padding: 0 0 22px 22px; }
-.timeline-entry::before {
-  content: "";
-  position: absolute;
-  left: -7px;
-  top: 4px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-.t-year { font-weight: 700; color: var(--accent); font-size: 0.9rem; }
-.t-title { font-weight: 600; margin: 2px 0 4px; }
-.t-body { font-size: 0.9rem; color: var(--text); }
-.t-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
-
-/* ---------- map ---------- */
+/* map pan/zoom window — functional, not decorative */
 .map-viewport {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   overflow: hidden;
   height: 70vh;
-  background: #0c0b09;
-  cursor: grab;
   touch-action: none;
 }
-.map-viewport.dragging { cursor: grabbing; }
 .map-viewport img {
   transform-origin: 0 0;
+  max-width: none;
   user-select: none;
   -webkit-user-drag: none;
-  max-width: none;
 }
-.map-controls { display: flex; gap: 8px; margin-top: 10px; }
-.btn {
-  background: var(--bg-card);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-family: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-.btn:hover { border-color: var(--accent-dim); }
-.map-hint { color: var(--text-dim); font-size: 0.8rem; margin-top: 8px; }

@@ -68,6 +68,7 @@ function activateTab(name) {
   $$(".panel").forEach((p) =>
     p.classList.toggle("active", p.dataset.panel === name)
   );
+  document.dispatchEvent(new CustomEvent("tab:shown", { detail: name }));
 }
 
 function wireTabs() {
@@ -96,11 +97,6 @@ function kingdomCard(k, isTerritory) {
     meta,
     el("div", { class: "k-desc" }, k.desc)
   );
-  if (Array.isArray(k.tags) && k.tags.length) {
-    card.append(
-      el("div", { class: "k-tags" }, ...k.tags.map((t) => el("span", { class: "k-tag" }, t)))
-    );
-  }
   return card;
 }
 
@@ -125,11 +121,6 @@ function renderHistory() {
         el("div", { class: "t-title" }, h.title),
         el("div", { class: "t-body" }, h.body)
       );
-      if (Array.isArray(h.tags) && h.tags.length) {
-        entry.append(
-          el("div", { class: "t-tags" }, ...h.tags.map((t) => el("span", { class: "k-tag" }, t)))
-        );
-      }
       return entry;
     })
   );
@@ -150,19 +141,29 @@ function initMap() {
   const apply = () => {
     img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
   };
+
+  // Fit the whole map inside the viewport and center it. This is the
+  // default view and what "Reset" returns to. No-op while the panel is
+  // hidden (clientWidth 0) or the image hasn't loaded — it's re-called
+  // on tab:shown and on image load.
+  const fitMap = () => {
+    const w = vp.clientWidth,
+      h = vp.clientHeight;
+    if (!w || !h || !img.naturalWidth) return;
+    scale = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+    tx = (w - img.naturalWidth * scale) / 2;
+    ty = (h - img.naturalHeight * scale) / 2;
+    apply();
+  };
+
   const zoom = (factor) => {
-    scale = Math.min(6, Math.max(0.5, scale * factor));
+    scale = Math.max(0.05, Math.min(8, scale * factor));
     apply();
   };
 
   $("#mapZoomIn")?.addEventListener("click", () => zoom(1.25));
   $("#mapZoomOut")?.addEventListener("click", () => zoom(0.8));
-  $("#mapReset")?.addEventListener("click", () => {
-    scale = 1;
-    tx = 0;
-    ty = 0;
-    apply();
-  });
+  $("#mapReset")?.addEventListener("click", fitMap);
 
   vp.addEventListener(
     "wheel",
@@ -177,7 +178,6 @@ function initMap() {
     dragging = true;
     sx = x - tx;
     sy = y - ty;
-    vp.classList.add("dragging");
   };
   const move = (x, y) => {
     if (!dragging) return;
@@ -187,7 +187,6 @@ function initMap() {
   };
   const end = () => {
     dragging = false;
-    vp.classList.remove("dragging");
   };
 
   vp.addEventListener("mousedown", (e) => start(e.clientX, e.clientY));
@@ -196,6 +195,13 @@ function initMap() {
   vp.addEventListener("touchstart", (e) => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
   vp.addEventListener("touchmove", (e) => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
   vp.addEventListener("touchend", end);
+
+  // Default to the full map: fit when the tab is shown, when the image
+  // finishes loading, and on resize.
+  document.addEventListener("tab:shown", (e) => { if (e.detail === "map") fitMap(); });
+  if (img.complete) fitMap();
+  else img.addEventListener("load", fitMap);
+  window.addEventListener("resize", fitMap);
 }
 
 // ============================================================

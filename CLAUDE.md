@@ -63,3 +63,14 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+## This project — Iosandros companion site
+
+A player's personal D&D companion site (Cloudflare Pages + D1). Full architecture and build instructions live in `README.md`. The player is non-technical — explain plainly, confirm before big changes, and commit + push when they're happy.
+
+Recognize these shorthand requests:
+
+- **"do Step 2"** (or "build / set up my character pages") — build the player's **Character** and **Play Tracker** pages from their character sheet, which is in the **parent `Iosandros` folder** (one level up). Follow the **"Step 2 prompt"**, **"two render hooks"**, and **"Example: seeding the character sheet"** sections of `README.md`. Do NOT touch the three world pages (13 Kingdoms, History, Map) — they're done and shared across all players.
+- **"do Step 3"** (or any restyle / layout / new-feature / new-page request) — make the change they ask for, one piece at a time, then commit + push.

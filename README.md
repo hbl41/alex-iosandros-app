@@ -40,7 +40,7 @@ The two blank pages show a "not set up yet" message until you run Claude. The sh
 
 ## What you do
 
-You'll paste two prompts into Claude — **Step 1** gets you set up, **Step 2** builds your site. Claude handles the technical parts; you mostly answer its questions. You're not expected to know any of this already.
+It's three steps — **Step 1** gets you set up, **Step 2** builds your site, **Step 3** is ongoing refinement. Claude handles the technical parts; you mostly answer its questions. You're not expected to know any of this already.
 
 1. **GitHub account.** No account? Sign up at [github.com](https://github.com). Then send Brady your username so he can add you as a collaborator on `hbl41/alex-iosandros-app`, and accept the invite GitHub emails you.
 
@@ -48,7 +48,7 @@ You'll paste two prompts into Claude — **Step 1** gets you set up, **Step 2** 
 
 3. **Step 1 — get set up.** Install Claude Code from [claude.com/claude-code](https://claude.com/claude-code) (a command or two — follow their page), run it in your Iosandros folder, and paste the **Step 1 prompt** (below). Claude Code connects GitHub, clones this repo into the folder, and confirms you can push — one step at a time.
 
-4. **Step 2 — build your site.** Run Claude Code inside the repo and paste the **Step 2 prompt** (below). Claude reads your character sheet + notes from the Iosandros folder and builds your Character + Play Tracker pages.
+4. **Step 2 — build your site.** Run Claude Code inside the repo and just tell it **"do Step 2"** — it reads the instructions from the repo and builds your Character + Play Tracker pages from your sheet. (Prefer to paste the exact prompt? It's in the **Step 2 prompt** section below.)
 
 5. **Step 3 — refine & expand (ongoing).** From here it's just conversation with Claude in the repo: restyle it (colors, fonts, the whole look), change the layout, add features, or add whole new pages — inventory, an NPC tracker, a quest log, whatever you want. No fixed prompt for this; just ask. When you're happy with a change, say "commit and push," then tap **↻ Refresh** to see it live.
 
@@ -88,7 +88,7 @@ and paste my Step 2 prompt there.
 
 ## Step 2 prompt — build your site
 
-Make sure your character sheet and notes are in the Iosandros folder (one level up from the repo). Then paste this into **Claude Code** (running in your repo from the end of Step 1):
+Once Claude Code is running in the repo, you can just say **"do Step 2"** — it follows these instructions (they're committed in the repo, and `CLAUDE.md` tells Claude where to find them). The exact prompt is here too if you'd rather paste it:
 
 ````
 I'm a player in the Iosandros D&D campaign — my character is Rojan. My

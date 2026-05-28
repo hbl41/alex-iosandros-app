@@ -15,7 +15,7 @@ You don't have to think about any of this — it's the scaffold Brady built:
 | **Cloudflare Pages** | Hosts the site at `alex.iosandros.com`. Auto-deploys every time you push to GitHub. |
 | **D1 database** (binding `PLAYER_DB`) | Server-side persistent storage — no localStorage. Changes like HP, FP, and notes save between sessions and across devices (phone, laptop, iPad — same data). |
 | **Auto-migration runner** | When Claude adds a new table, the runner applies it on first request after deploy. You don't run anything by hand. |
-| **Shared world data** | The 13 kingdoms, prophecies, calendar, and history are in `data/data.js`. The party + named NPCs are seeded in the `people` table. |
+| **Shared world data** | The 13 kingdoms, territories, prophecies, calendar, and in-world history are in `data/data.js` — read-only world canon. No character-specific data is pre-loaded (no NPC seed, no character sheet). |
 | **Backend API** | `/api/people`, `/api/events/`, `/api/state/[key]`, `/api/health` already work. Claude wires the UI to these. |
 
 ---
@@ -73,7 +73,8 @@ Quick orientation:
 Before generating anything, ASK me what I want my site to include. Some
 options to surface:
 - Character sheet view (what fields matter to me)
-- NPC roster (the people table is already seeded — just needs a UI)
+- NPC roster (the people table exists but is empty — I can seed it from
+  my own notes, or just add NPCs as we play)
 - Spell list / abilities tracker
 - Inventory
 - Session notes / scratchpad
@@ -128,7 +129,6 @@ alex-iosandros-app/
     ├── index.js           ← aggregates migrations in order
     ├── 0001_initial.js
     ├── 0002_people.js
-    ├── 0003_seed_people.js
     └── 0004_stage3and4.js
 ```
 
@@ -142,7 +142,7 @@ The D1 database is bound as `env.PLAYER_DB` in every Pages Function. Always go t
 |---|---|
 | `_health` | Trivial row for the health check. |
 | `_migrations_log` | Tracks which migrations have been applied. Don't touch by hand. |
-| `people` | Party + NPCs. Seeded shared roster. CRUD via `/api/people`. |
+| `people` | Party + NPCs. Empty by default — seed via a migration or add through `/api/people`. |
 | `campaign_events` | In-game dated entries. CRUD via `/api/events`. |
 | `app_state` | Key/value singletons (`character`, `notes`, `session`, `date`, `budget`, `advantage`, `kingdomFilter`). Get/set via `/api/state/[key]`. |
 
@@ -175,16 +175,16 @@ When Claude generates your first migration to put your character data into `app_
 // migrations/0005_character_seed.js
 export default {
   id: "0005_character_seed",
-  sql: `
-    INSERT INTO app_state (key, value, updated_at, updated_by)
-    VALUES (
-      'character',
-      '<JSON.stringify(rojanCharacterSheet) — escape single quotes by doubling them>',
-      '<ISO timestamp>',
-      'seed'
-    )
-    ON CONFLICT(key) DO NOTHING;
-  `,
+  statements: [
+    `INSERT INTO app_state (key, value, updated_at, updated_by)
+     VALUES (
+       'character',
+       '<JSON.stringify(rojanCharacterSheet) — escape single quotes by doubling them>',
+       '<ISO timestamp>',
+       'seed'
+     )
+     ON CONFLICT(key) DO NOTHING`,
+  ],
 };
 ```
 

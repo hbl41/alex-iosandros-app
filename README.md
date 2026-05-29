@@ -44,7 +44,7 @@ It's three steps — **Step 1** gets you set up, **Step 2** builds your site, **
 
 1. **GitHub account.** No account? Sign up at [github.com](https://github.com). Then send Brady your username so he can add you as a collaborator on `hbl41/alex-iosandros-app`, and accept the invite GitHub emails you.
 
-2. **Make an `Iosandros` folder** on your computer and gather your materials in it: your character sheet, plus any campaign info you have — history documents, your session-zero backstory, notes. Anything you want your site to know about Rojan and the world goes here.
+2. **Make an `Iosandros` folder** on your computer and gather your materials in it: your character sheet, plus any campaign info you have — history documents, any notes from your session zero. Anything you want your site to know about Rojan and the world goes here. Claude Code focuses on this folder and asks before touching anything outside it.
 
 3. **Step 1 — get set up.** Install Claude Code from [claude.com/claude-code](https://claude.com/claude-code) (a command or two — follow their page), run it in your Iosandros folder, and paste the **Step 1 prompt** (below). Claude Code connects GitHub, clones this repo into the folder, and confirms you can push — one step at a time.
 

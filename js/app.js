@@ -262,51 +262,6 @@ async function renderTracker() {
   );
 }
 
-// ---------- copyable Step 2 prompt (shown in the empty states) ----------
-// Keep this in sync with the "Step 2 prompt" in README.md.
-const STEP2_PROMPT = `I'm a player in the Iosandros D&D campaign — my character is Rojan. My
-character sheet and any campaign notes are in this repo's parent folder (the
-"Iosandros" folder, one level up). Read them.
-
-This repo is my companion site, already deployed. Read README.md and
-CLAUDE.md first — they explain how it's built and the ground rules. The
-"two render hooks" and "Example: seeding the character sheet" sections of
-README.md show exactly what to build.
-
-Your job: build my two personal pages — Character and Play Tracker — from my
-character sheet. The other three tabs (13 Kingdoms, History, Map) are already
-done; leave them alone.
-
-Start by asking me what I want on each page. Then build one piece at a time,
-showing me as you go. When I'm happy, commit and push.`;
-
-function mountPromptBoxes() {
-  $$(".prompt-box").forEach((box) => {
-    const pre = el("pre", {}, STEP2_PROMPT);
-    const btn = el("button", { class: "btn copy-btn" }, "Copy prompt");
-    btn.addEventListener("click", async () => {
-      let ok = false;
-      try {
-        await navigator.clipboard.writeText(STEP2_PROMPT);
-        ok = true;
-      } catch {
-        // Clipboard API unavailable — fall back to selecting + execCommand,
-        // and leave the text selected so manual copy still works.
-        const range = document.createRange();
-        range.selectNodeContents(pre);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-        try { ok = document.execCommand("copy"); } catch {}
-        sel.removeAllRanges();
-      }
-      btn.textContent = ok ? "Copied!" : "Press ⌘/Ctrl-C to copy";
-      setTimeout(() => (btn.textContent = "Copy prompt"), 1800);
-    });
-    box.replaceChildren(btn, pre);
-  });
-}
-
 // expose helpers so Claude-added code (here or in other files) can reuse them
 window.IO = { $, $$, el, fetchState, saveState, activateTab };
 
@@ -314,7 +269,6 @@ window.IO = { $, $$, el, fetchState, saveState, activateTab };
 document.addEventListener("DOMContentLoaded", () => {
   wireTabs();
   $("#refreshBtn")?.addEventListener("click", () => location.reload());
-  mountPromptBoxes();
   renderKingdoms();
   renderHistory();
   initMap();

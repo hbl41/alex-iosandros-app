@@ -107,21 +107,6 @@ h2 { font-size: 1.05rem; margin: 24px 0 12px; }
 .empty-state .setup-steps { text-align: left; margin: 10px 0 0; }
 .empty-state .setup-steps p { margin: 0 0 10px; }
 .empty-state code { background: var(--card); padding: 2px 6px; border-radius: 4px; }
-.prompt-box { margin-top: 12px; text-align: left; }
-.prompt-box .copy-btn { margin-bottom: 8px; }
-.prompt-box pre {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  max-height: 220px;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-size: 0.78rem;
-  line-height: 1.45;
-  margin: 0;
-}
 
 /* ---------- kingdom / territory cards ---------- */
 .kingdom-grid {

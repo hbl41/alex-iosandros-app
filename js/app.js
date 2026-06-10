@@ -208,6 +208,249 @@ function initMap() {
 //  PERSONAL PAGES (Claude fills these in per character)
 // ============================================================
 
+function fmtMod(n) {
+  return n >= 0 ? `+${n}` : `${n}`;
+}
+
+function charHeader(data) {
+  const { names, summary, traits } = data;
+  const summaryItems = [
+    ["Class", `${summary.class} (${summary.subclass})`],
+    ["Level", summary.level],
+    ["Background", summary.background],
+    ["AC", `${summary.ac} — ${summary.acNote}`],
+    ["HP (max)", summary.hpTotal],
+    ["Origin", summary.origin],
+    ["Height / Weight", summary.heightWeight],
+    ["Age", summary.age],
+  ];
+  return el(
+    "div",
+    { class: "char-card" },
+    el("div", { class: "char-name" }, names.lorenthar),
+    el("div", { class: "char-title" }, names.title),
+    el(
+      "div",
+      { class: "char-aliases" },
+      `Also known as: ${names.bos}, ${names.aliases.join(", ")}`
+    ),
+    el(
+      "div",
+      { class: "char-summary" },
+      ...summaryItems.map(([label, val]) =>
+        el("div", {}, el("strong", {}, label), String(val))
+      )
+    ),
+    traits ? el("p", { class: "k-desc" }, traits) : null
+  );
+}
+
+function backstorySection(data) {
+  const textarea = el("textarea", {
+    class: "backstory-box",
+    placeholder: "Write Manfred's backstory here — personality, morals, flaws, history...",
+  });
+  textarea.value = data.backstory || "";
+  const hint = el("div", { class: "save-hint" }, "");
+
+  let saveTimeout;
+  textarea.addEventListener("input", () => {
+    hint.textContent = "Saving…";
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+      data.backstory = textarea.value;
+      const ok = await saveState("character", data);
+      hint.textContent = ok ? "Saved." : "Couldn't save — check your connection.";
+    }, 600);
+  });
+
+  return el(
+    "div",
+    { class: "char-card" },
+    el("h2", {}, "Backstory"),
+    el(
+      "p",
+      { class: "k-desc" },
+      "Personality, morals, flaws, and history — edit anytime, it saves automatically."
+    ),
+    textarea,
+    hint
+  );
+}
+
+function abilityScoresSection(data) {
+  return el(
+    "div",
+    { class: "char-card" },
+    el("h2", {}, "Ability Scores"),
+    el(
+      "div",
+      { class: "stat-grid" },
+      ...data.attributes.map((a) =>
+        el(
+          "div",
+          { class: "stat-card" },
+          el("div", { class: "stat-abbr" }, a.abbr),
+          el("div", { class: "stat-score" }, a.score),
+          el("div", { class: "stat-detail" }, `Mod ${fmtMod(a.mod)}`),
+          el(
+            "div",
+            { class: "stat-detail" },
+            `Save ${fmtMod(a.save)}${a.saveNote ? ` (${a.saveNote})` : ""}`
+          )
+        )
+      )
+    )
+  );
+}
+
+function skillsSection(data) {
+  const groups = Object.entries(data.skills).map(([attr, list]) =>
+    el(
+      "div",
+      { class: "skill-group" },
+      el("h3", {}, attr),
+      el(
+        "ul",
+        { class: "skill-list" },
+        ...list.map((s) =>
+          el("li", {}, el("span", {}, s.name), el("span", {}, fmtMod(s.bonus)))
+        )
+      )
+    )
+  );
+
+  const notes = (data.skillNotes || []).map((n) =>
+    el(
+      "div",
+      {},
+      el("strong", {}, `${n.skill}: `),
+      el("ul", {}, ...n.items.map((i) => el("li", {}, i)))
+    )
+  );
+
+  return el(
+    "div",
+    { class: "char-card" },
+    el("h2", {}, "Skills"),
+    el("div", { class: "skills-grid" }, ...groups),
+    notes.length ? el("div", { class: "skill-notes" }, ...notes) : null
+  );
+}
+
+function weaponsSection(data) {
+  const w = data.weapons;
+  return el(
+    "div",
+    { class: "char-card" },
+    el("h2", {}, "Weapons & Attacks"),
+    el("p", { class: "k-desc" }, `Proficiencies: ${w.proficiencies}`),
+    el(
+      "table",
+      { class: "data-table" },
+      el(
+        "thead",
+        {},
+        el(
+          "tr",
+          {},
+          el("th", {}, "Weapon"),
+          el("th", {}, "Attack"),
+          el("th", {}, "Damage"),
+          el("th", {}, "Notes")
+        )
+      ),
+      el(
+        "tbody",
+        {},
+        ...w.items.map((it) =>
+          el(
+            "tr",
+            {},
+            el("td", {}, it.name),
+            el("td", {}, it.attack),
+            el("td", {}, it.damage),
+            el("td", {}, it.notes)
+          )
+        )
+      )
+    )
+  );
+}
+
+function spellsSection(data) {
+  const st = data.scarredTalent;
+  const sp = data.spells;
+  return el(
+    "div",
+    { class: "char-card" },
+    el("h2", {}, "Scarred Talent & Spells"),
+    el("p", { class: "k-desc" }, st.intro),
+    el("p", { class: "k-desc" }, st.dieRules),
+    el("p", { class: "k-desc" }, `Scar Replenishment: ${st.scarReplenishment}`),
+    el("p", { class: "k-desc" }, sp.note),
+    el(
+      "table",
+      { class: "data-table" },
+      el(
+        "thead",
+        {},
+        el(
+          "tr",
+          {},
+          el("th", {}, "Ability"),
+          el("th", {}, "Bonus / Save"),
+          el("th", {}, "Effect")
+        )
+      ),
+      el(
+        "tbody",
+        {},
+        ...sp.items.map((it) =>
+          el(
+            "tr",
+            {},
+            el("td", {}, it.name),
+            el("td", {}, it.bonus),
+            el("td", {}, it.effect)
+          )
+        )
+      )
+    )
+  );
+}
+
+function equipmentSection(data) {
+  return el(
+    "div",
+    { class: "char-card" },
+    el("h2", {}, "Equipment & Inventory"),
+    el(
+      "ul",
+      { class: "ability-list" },
+      ...data.equipment.map((e) => el("li", {}, el("strong", {}, `${e.name}: `), e.desc))
+    ),
+    data.inventory?.length
+      ? el("p", { class: "k-desc" }, `Inventory: ${data.inventory.join(", ")}`)
+      : null
+  );
+}
+
+function abilitiesSection(data) {
+  return el(
+    "div",
+    { class: "char-card" },
+    el("h2", {}, "Abilities & Traits"),
+    el(
+      "ul",
+      { class: "ability-list" },
+      ...data.abilitiesAndTraits.map((a) =>
+        el("li", {}, el("strong", {}, `${a.name}: `), a.desc)
+      )
+    )
+  );
+}
+
 async function renderCharacter() {
   const empty = $("#character-empty");
   const content = $("#character-content");
@@ -221,16 +464,246 @@ async function renderCharacter() {
   if (empty) empty.hidden = true;
   if (content) content.hidden = false;
 
-  // ─────────────────────────────────────────────────────────
-  // CLAUDE: render the character sheet here from `data`.
-  // `data` is the JSON seeded in migrations/0005_character_seed.js
-  // (app_state key 'character'). Build DOM into `content` with the
-  // el() helper + .kingdom-card / .k-* classes (see css/style.css).
-  // Show whatever the player's sheet has: stats, skills, weapons,
-  // abilities, equipment, backstory. Match the dark theme.
-  // ─────────────────────────────────────────────────────────
   content.replaceChildren(
-    el("p", { class: "k-desc" }, "Character data loaded — Claude renders the full sheet here.")
+    charHeader(data),
+    backstorySection(data),
+    abilityScoresSection(data),
+    skillsSection(data),
+    weaponsSection(data),
+    spellsSection(data),
+    equipmentSection(data),
+    abilitiesSection(data)
+  );
+}
+
+// Scarred Talent die sizes, smallest to largest. Shrinks toward d4 (then
+// "Spent") on a max roll, grows back toward `base` on a roll of 1.
+const DIE_LADDER = [4, 6, 8, 10, 12];
+
+function dieLabel(die) {
+  return die > 0 ? `d${die}` : "Spent";
+}
+
+function hpCard(data, charLevel, persist, refresh) {
+  const display = el("div", { class: "hp-display" });
+  const rollResult = el("div", { class: "roll-result" }, "");
+
+  const updateDisplay = () => {
+    display.replaceChildren(
+      `${data.hp.current}`,
+      el("span", { class: "hp-total" }, ` / ${data.hp.total}`)
+    );
+  };
+  updateDisplay();
+
+  const decBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      onclick: async () => {
+        data.hp.current = Math.max(0, data.hp.current - 1);
+        updateDisplay();
+        await persist();
+      },
+    },
+    "−1 HP"
+  );
+
+  const incBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      onclick: async () => {
+        data.hp.current = Math.min(data.hp.total, data.hp.current + 1);
+        updateDisplay();
+        await persist();
+      },
+    },
+    "+1 HP"
+  );
+
+  const secondWindBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      disabled: data.secondWindUsed || null,
+      onclick: async () => {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        const healed = roll + charLevel;
+        data.hp.current = Math.min(data.hp.total, data.hp.current + healed);
+        data.secondWindUsed = true;
+        updateDisplay();
+        rollResult.textContent = `Second Wind: rolled ${roll} + ${charLevel} (level) = +${healed} HP.`;
+        secondWindBtn.disabled = true;
+        await persist();
+      },
+    },
+    "Second Wind (1d6 + level)"
+  );
+
+  return el(
+    "div",
+    { class: "tracker-card" },
+    el("h3", {}, "Hit Points"),
+    display,
+    el("div", { class: "btn-row" }, decBtn, incBtn, secondWindBtn),
+    rollResult
+  );
+}
+
+function scarredTalentCard(data, persist) {
+  const display = el("div", { class: "die-display" });
+  const updateDisplay = () => {
+    display.replaceChildren(
+      dieLabel(data.scarredTalent.die),
+      el("span", { class: "die-base" }, ` (starting d${data.scarredTalent.base})`)
+    );
+  };
+  updateDisplay();
+
+  const shrinkBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      onclick: async () => {
+        const idx = DIE_LADDER.indexOf(data.scarredTalent.die);
+        data.scarredTalent.die = idx <= 0 ? 0 : DIE_LADDER[idx - 1];
+        updateDisplay();
+        await persist();
+      },
+    },
+    "Rolled max → shrinks"
+  );
+
+  const growBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      onclick: async () => {
+        const idx = DIE_LADDER.indexOf(data.scarredTalent.die);
+        const next = DIE_LADDER[Math.max(idx, 0) + (idx < 0 ? 0 : 1)] ?? data.scarredTalent.base;
+        data.scarredTalent.die = Math.min(next, data.scarredTalent.base);
+        updateDisplay();
+        await persist();
+      },
+    },
+    "Rolled 1 → grows"
+  );
+
+  const replenishBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      disabled: data.scarReplenishmentUsed || null,
+      onclick: async () => {
+        data.scarredTalent.die = data.scarredTalent.base;
+        data.scarReplenishmentUsed = true;
+        updateDisplay();
+        replenishBtn.disabled = true;
+        await persist();
+      },
+    },
+    "Scar Replenishment"
+  );
+
+  return el(
+    "div",
+    { class: "tracker-card" },
+    el("h3", {}, "Scarred Talent Die"),
+    display,
+    el("div", { class: "btn-row" }, shrinkBtn, growBtn, replenishBtn),
+    el("p", { class: "k-desc" }, "Bonus action, once per long rest: Scar Replenishment resets the die to its starting size.")
+  );
+}
+
+function restCard(data, persist, refresh) {
+  const actionSurgeRow = el(
+    "label",
+    { class: "tracker-row" },
+    el("span", {}, "Action Surge used"),
+    el("input", {
+      type: "checkbox",
+      checked: data.actionSurgeUsed || null,
+      onchange: async (e) => {
+        data.actionSurgeUsed = e.target.checked;
+        await persist();
+      },
+    })
+  );
+
+  const shortRestBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      onclick: async () => {
+        data.secondWindUsed = false;
+        data.actionSurgeUsed = false;
+        await persist();
+        refresh();
+      },
+    },
+    "Short Rest"
+  );
+
+  const longRestBtn = el(
+    "button",
+    {
+      class: "btn btn-small",
+      onclick: async () => {
+        data.hp.current = data.hp.total;
+        data.scarredTalent.die = data.scarredTalent.base;
+        data.secondWindUsed = false;
+        data.actionSurgeUsed = false;
+        data.scarReplenishmentUsed = false;
+        await persist();
+        refresh();
+      },
+    },
+    "Long Rest"
+  );
+
+  return el(
+    "div",
+    { class: "tracker-card" },
+    el("h3", {}, "Rest & Resources"),
+    actionSurgeRow,
+    el("p", { class: "k-desc" }, "Short rest resets Second Wind and Action Surge. Long rest also resets HP, the Scarred Talent die, and Scar Replenishment."),
+    el("div", { class: "btn-row" }, shortRestBtn, longRestBtn)
+  );
+}
+
+function currencyNotesCard(data, persist) {
+  const gpInput = el("input", { type: "number", class: "gp-input", value: data.gp });
+  gpInput.addEventListener("change", async () => {
+    data.gp = Number(gpInput.value) || 0;
+    await persist();
+  });
+
+  const notesArea = el("textarea", {
+    class: "notes-box",
+    placeholder: "Session notes, conditions, reminders...",
+  });
+  notesArea.value = data.notes || "";
+  const hint = el("div", { class: "save-hint" }, "");
+
+  let saveTimeout;
+  notesArea.addEventListener("input", () => {
+    hint.textContent = "Saving…";
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+      data.notes = notesArea.value;
+      const ok = await persist();
+      hint.textContent = ok ? "Saved." : "Couldn't save — check your connection.";
+    }, 600);
+  });
+
+  return el(
+    "div",
+    { class: "tracker-card full-width" },
+    el("h3", {}, "Currency & Notes"),
+    el("div", { class: "tracker-row" }, el("label", {}, "Gold (GP)"), gpInput),
+    notesArea,
+    hint
   );
 }
 
@@ -247,18 +720,20 @@ async function renderTracker() {
   if (empty) empty.hidden = true;
   if (content) content.hidden = false;
 
-  // ─────────────────────────────────────────────────────────
-  // CLAUDE: render the live play tracker here from `data`
-  // (app_state key 'tracker'). Build controls for whatever the
-  // character tracks mid-session — current HP, conditions,
-  // resource/ability uses, a notes box, etc. Persist edits with:
-  //   const next = { ...data, hp: 24 };
-  //   await saveState('tracker', next);
-  // Don't assume Caeto's resources (Ring/Budget) — use the
-  // player's own sheet to decide what to track.
-  // ─────────────────────────────────────────────────────────
+  const charData = await fetchState("character");
+  const charLevel = charData?.summary?.level ?? 1;
+  const persist = () => saveState("tracker", data);
+  const refresh = () => renderTracker();
+
   content.replaceChildren(
-    el("p", { class: "k-desc" }, "Tracker data loaded — Claude renders the controls here.")
+    el(
+      "div",
+      { class: "tracker-grid" },
+      hpCard(data, charLevel, persist, refresh),
+      scarredTalentCard(data, persist),
+      restCard(data, persist, refresh),
+      currencyNotesCard(data, persist)
+    )
   );
 }
 

@@ -818,13 +818,30 @@ async function renderTracker() {
   );
 }
 
+// Clears every cookie this page can see (across likely paths) so the
+// "Refresh" button truly reloads from scratch rather than from cached
+// session state.
+function clearAllCookies() {
+  const paths = ["/", location.pathname, "."];
+  for (const cookie of document.cookie.split(";")) {
+    const name = cookie.split("=")[0].trim();
+    if (!name) continue;
+    for (const path of paths) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}`;
+    }
+  }
+}
+
 // expose helpers so Claude-added code (here or in other files) can reuse them
 window.IO = { $, $$, el, fetchState, saveState, activateTab };
 
 // ---------- boot ----------
 document.addEventListener("DOMContentLoaded", () => {
   wireTabs();
-  $("#refreshBtn")?.addEventListener("click", () => location.reload());
+  $("#refreshBtn")?.addEventListener("click", () => {
+    clearAllCookies();
+    location.reload();
+  });
   renderKingdoms();
   renderHistory();
   initMap();

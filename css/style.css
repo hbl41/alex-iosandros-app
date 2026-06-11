@@ -298,6 +298,8 @@ h2 { font-size: 1.05rem; margin: 24px 0 12px; }
 .tracker-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 .tracker-row label { font-size: 0.9rem; }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.btn-row.no-wrap { flex-wrap: nowrap; margin-bottom: 0; }
+.damage-label { font-size: 1.05rem; }
 .num-input {
   width: 80px;
   padding: 4px 6px;

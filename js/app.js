@@ -633,8 +633,8 @@ function hpCard(data, charLevel, persist, refresh) {
   const damageRow = el(
     "div",
     { class: "tracker-row" },
-    el("label", {}, "Damage taken"),
-    el("div", { class: "btn-row" }, damageInput, damageBtn)
+    el("label", { class: "damage-label" }, "Damage taken"),
+    el("div", { class: "btn-row no-wrap" }, damageInput, damageBtn)
   );
 
   const secondWindBtn = el(

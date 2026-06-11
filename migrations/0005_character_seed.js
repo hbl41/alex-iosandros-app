@@ -21,7 +21,7 @@ const character = {
     age: "19 — born 1205 SE",
     origin: "Lorenthar",
   },
-  traits: "Lyocane powder immunity",
+  traits: "",
   backstory: "",
   attributes: [
     { abbr: "STR", name: "Strength", score: 12, mod: 1, save: 1, saveNote: "+2 prof" },
@@ -162,6 +162,10 @@ const character = {
     {
       name: "Fighting Style: Thrown Weapon Fighting (TCE)",
       desc: "Drawing a thrown weapon is part of the attack with it, and ranged attacks with thrown weapons gain +2 to the damage roll.",
+    },
+    {
+      name: "Lyocane powder immunity",
+      desc: "From your training in the brotherhood you have developed a tolerance to the deadly Lyocane powder.",
     },
   ],
 };

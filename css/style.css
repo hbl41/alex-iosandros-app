@@ -9,11 +9,11 @@
    ============================================================ */
 
 :root {
-  --bg: #ffffff;
-  --text: #1a1a1a;
-  --muted: #6b6b6b;
-  --border: #d4d4d4;
-  --card: #fafafa;
+  --bg: #15161a;
+  --text: #e8e8e8;
+  --muted: #9a9a9a;
+  --border: #3a3b40;
+  --card: #1e1f24;
   --radius: 8px;
   --space: 16px;
   --maxw: 960px;
@@ -149,7 +149,7 @@ h2 { font-size: 1.05rem; margin: 24px 0 12px; }
   border-radius: var(--radius);
   overflow: hidden;
   height: 70vh;
-  background: #f0f0f0;
+  background: var(--card);
   cursor: grab;
   touch-action: none;
 }

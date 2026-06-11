@@ -814,6 +814,7 @@ async function renderTracker() {
       ),
       charData ? abilityScoresSection(charData) : null,
       charData ? weaponsSection(charData) : null,
+      charData ? spellsSection(charData) : null,
     ].filter(Boolean)
   );
 }

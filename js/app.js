@@ -643,7 +643,7 @@ function hpCard(data, charLevel, persist, refresh) {
       onclick: async () => {
         const roll = Math.floor(Math.random() * 6) + 1;
         const healed = roll + charLevel;
-        data.hp.current = Math.min(data.hp.total, data.hp.current + healed);
+        data.hp.current = data.hp.current + healed;
         data.secondWindUsed = true;
         updateDisplay();
         rollResult.textContent = `Second Wind: rolled ${roll} + ${charLevel} (level) = +${healed} HP.`;

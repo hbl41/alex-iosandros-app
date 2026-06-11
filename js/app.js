@@ -609,30 +609,32 @@ function hpCard(data, charLevel, persist, refresh) {
   };
   updateDisplay();
 
-  const decBtn = el(
+  const damageInput = el("input", {
+    type: "number",
+    class: "num-input",
+    placeholder: "0",
+  });
+
+  const damageBtn = el(
     "button",
     {
       class: "btn btn-small",
       onclick: async () => {
-        data.hp.current = Math.max(0, data.hp.current - 1);
+        const damage = Number(damageInput.value) || 0;
+        data.hp.current = data.hp.current - damage;
+        damageInput.value = "";
         updateDisplay();
         await persist();
       },
     },
-    "−1 HP"
+    "Confirm"
   );
 
-  const incBtn = el(
-    "button",
-    {
-      class: "btn btn-small",
-      onclick: async () => {
-        data.hp.current = Math.min(data.hp.total, data.hp.current + 1);
-        updateDisplay();
-        await persist();
-      },
-    },
-    "+1 HP"
+  const damageRow = el(
+    "div",
+    { class: "tracker-row" },
+    el("label", {}, "Damage taken"),
+    el("div", { class: "btn-row" }, damageInput, damageBtn)
   );
 
   const secondWindBtn = el(
@@ -659,7 +661,8 @@ function hpCard(data, charLevel, persist, refresh) {
     { class: "tracker-card" },
     el("h3", {}, "Hit Points"),
     display,
-    el("div", { class: "btn-row" }, decBtn, incBtn, secondWindBtn),
+    damageRow,
+    el("div", { class: "btn-row" }, secondWindBtn),
     rollResult
   );
 }

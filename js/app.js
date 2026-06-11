@@ -421,22 +421,132 @@ function spellsSection(data) {
 }
 
 function equipmentSection(data) {
+  if (!Array.isArray(data.equipment)) data.equipment = [];
+
+  // One-time migration: fold the old plain-string inventory list into
+  // the editable equipment entries (each gets an empty description).
+  if (Array.isArray(data.inventory) && data.inventory.length) {
+    for (const item of data.inventory) {
+      data.equipment.push({ name: item, desc: "" });
+    }
+    data.inventory = [];
+    saveState("character", data);
+  }
+
+  const persist = () => saveState("character", data);
+  const list = el("div", { class: "equipment-list" });
+
+  function renderItem(item, startInEdit) {
+    const card = el("div", { class: "equipment-item" });
+
+    const showView = () => {
+      card.replaceChildren(
+        ...[
+          el("div", { class: "equipment-item-title" }, item.name || "(untitled)"),
+          item.desc ? el("div", { class: "equipment-item-desc" }, item.desc) : null,
+          el(
+            "div",
+            { class: "btn-row" },
+            el("button", { class: "btn btn-small", onclick: showEdit }, "Edit"),
+            el(
+              "button",
+              {
+                class: "btn btn-small",
+                onclick: async () => {
+                  data.equipment.splice(data.equipment.indexOf(item), 1);
+                  await persist();
+                  renderList();
+                },
+              },
+              "Delete"
+            )
+          ),
+        ].filter(Boolean)
+      );
+    };
+
+    function showEdit() {
+      const titleInput = el("input", {
+        class: "equipment-input",
+        type: "text",
+        placeholder: "Title",
+        value: item.name || "",
+      });
+      const descInput = el("textarea", {
+        class: "equipment-textarea",
+        placeholder: "Description",
+      });
+      descInput.value = item.desc || "";
+
+      card.replaceChildren(
+        titleInput,
+        descInput,
+        el(
+          "div",
+          { class: "btn-row" },
+          el(
+            "button",
+            {
+              class: "btn btn-small",
+              onclick: async () => {
+                item.name = titleInput.value.trim();
+                item.desc = descInput.value.trim();
+                await persist();
+                showView();
+              },
+            },
+            "Save"
+          ),
+          el(
+            "button",
+            {
+              class: "btn btn-small",
+              onclick: async () => {
+                if (startInEdit) {
+                  data.equipment.splice(data.equipment.indexOf(item), 1);
+                  await persist();
+                  renderList();
+                } else {
+                  showView();
+                }
+              },
+            },
+            "Cancel"
+          )
+        )
+      );
+    }
+
+    if (startInEdit) showEdit();
+    else showView();
+
+    return card;
+  }
+
+  function renderList() {
+    list.replaceChildren(...data.equipment.map((item) => renderItem(item, false)));
+  }
+  renderList();
+
+  const addBtn = el(
+    "button",
+    {
+      class: "btn",
+      onclick: () => {
+        const item = { name: "", desc: "" };
+        data.equipment.push(item);
+        list.append(renderItem(item, true));
+      },
+    },
+    "Add entry"
+  );
+
   return el(
     "div",
     { class: "char-card" },
     el("h2", {}, "Equipment & Inventory"),
-    el(
-      "ul",
-      { class: "ability-list" },
-      ...data.equipment.map((e) =>
-        e.desc
-          ? el("li", {}, el("strong", {}, `${e.name}: `), e.desc)
-          : el("li", {}, el("strong", {}, e.name))
-      )
-    ),
-    data.inventory?.length
-      ? el("p", { class: "k-desc" }, `Inventory: ${data.inventory.join(", ")}`)
-      : null
+    list,
+    addBtn
   );
 }
 

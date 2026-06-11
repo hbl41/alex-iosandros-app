@@ -252,6 +252,28 @@ h2 { font-size: 1.05rem; margin: 24px 0 12px; }
 }
 .save-hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
 
+.equipment-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.equipment-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.equipment-item-title { font-weight: 700; margin-bottom: 4px; }
+.equipment-item-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 8px; white-space: pre-wrap; }
+.equipment-input,
+.equipment-textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+.equipment-textarea { min-height: 60px; resize: vertical; }
+
 /* ---------- play tracker page ---------- */
 .tracker-grid {
   display: grid;

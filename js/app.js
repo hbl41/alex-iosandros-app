@@ -812,6 +812,7 @@ async function renderTracker() {
         scarredTalentCard(data, persist),
         restCard(data, persist, refresh)
       ),
+      charData ? abilityScoresSection(charData) : null,
       charData ? weaponsSection(charData) : null,
     ].filter(Boolean)
   );

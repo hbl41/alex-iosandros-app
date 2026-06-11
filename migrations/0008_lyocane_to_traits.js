@@ -9,7 +9,7 @@ export default {
      SET value = json_set(
        json_remove(value, '$.traits'),
        '$.abilitiesAndTraits[#]',
-       json('{"name":"Lyocane powder immunity","desc":"From your training in the brotherhood you have developed a tolerance to the deadly Lyocane powder."}')
+       json('{"name":"Lyocane Powder Immunity","desc":"From your training in the brotherhood you have developed a tolerance to the deadly Lyocane powder."}')
      )
      WHERE key = 'character'
        AND json_extract(value, '$.traits') = 'Lyocane powder immunity'`,

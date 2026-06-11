@@ -164,7 +164,7 @@ const character = {
       desc: "Drawing a thrown weapon is part of the attack with it, and ranged attacks with thrown weapons gain +2 to the damage roll.",
     },
     {
-      name: "Lyocane powder immunity",
+      name: "Lyocane Powder Immunity",
       desc: "From your training in the brotherhood you have developed a tolerance to the deadly Lyocane powder.",
     },
   ],

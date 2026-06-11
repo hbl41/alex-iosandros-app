@@ -139,7 +139,7 @@ const character = {
   equipment: [
     { name: "Climbing Claws", desc: "Scale smooth/rough stone walls at half speed and wooden walls at full speed — no Acrobatics check required." },
     { name: "Infiltrator's leather armor", desc: "AC 13 + DEX" },
-    { name: "4 Sai and 2 Kunai", desc: "(lost one kunai)" },
+    { name: "4 Sai and 2 Kunai" },
   ],
   inventory: ["700 GP"],
   abilitiesAndTraits: [

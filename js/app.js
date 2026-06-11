@@ -428,7 +428,11 @@ function equipmentSection(data) {
     el(
       "ul",
       { class: "ability-list" },
-      ...data.equipment.map((e) => el("li", {}, el("strong", {}, `${e.name}: `), e.desc))
+      ...data.equipment.map((e) =>
+        e.desc
+          ? el("li", {}, el("strong", {}, `${e.name}: `), e.desc)
+          : el("li", {}, el("strong", {}, e.name))
+      )
     ),
     data.inventory?.length
       ? el("p", { class: "k-desc" }, `Inventory: ${data.inventory.join(", ")}`)

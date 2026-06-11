@@ -671,41 +671,6 @@ function restCard(data, persist, refresh) {
   );
 }
 
-function currencyNotesCard(data, persist) {
-  const gpInput = el("input", { type: "number", class: "gp-input", value: data.gp });
-  gpInput.addEventListener("change", async () => {
-    data.gp = Number(gpInput.value) || 0;
-    await persist();
-  });
-
-  const notesArea = el("textarea", {
-    class: "notes-box",
-    placeholder: "Session notes, conditions, reminders...",
-  });
-  notesArea.value = data.notes || "";
-  const hint = el("div", { class: "save-hint" }, "");
-
-  let saveTimeout;
-  notesArea.addEventListener("input", () => {
-    hint.textContent = "Saving…";
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(async () => {
-      data.notes = notesArea.value;
-      const ok = await persist();
-      hint.textContent = ok ? "Saved." : "Couldn't save — check your connection.";
-    }, 600);
-  });
-
-  return el(
-    "div",
-    { class: "tracker-card full-width" },
-    el("h3", {}, "Currency & Notes"),
-    el("div", { class: "tracker-row" }, el("label", {}, "Gold (GP)"), gpInput),
-    notesArea,
-    hint
-  );
-}
-
 async function renderTracker() {
   const empty = $("#tracker-empty");
   const content = $("#tracker-content");
@@ -731,8 +696,7 @@ async function renderTracker() {
         { class: "tracker-grid" },
         hpCard(data, charLevel, persist, refresh),
         scarredTalentCard(data, persist),
-        restCard(data, persist, refresh),
-        currencyNotesCard(data, persist)
+        restCard(data, persist, refresh)
       ),
       charData ? weaponsSection(charData) : null,
     ].filter(Boolean)

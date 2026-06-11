@@ -469,7 +469,6 @@ async function renderCharacter() {
     backstorySection(data),
     abilityScoresSection(data),
     skillsSection(data),
-    weaponsSection(data),
     spellsSection(data),
     equipmentSection(data),
     abilitiesSection(data)
@@ -726,14 +725,17 @@ async function renderTracker() {
   const refresh = () => renderTracker();
 
   content.replaceChildren(
-    el(
-      "div",
-      { class: "tracker-grid" },
-      hpCard(data, charLevel, persist, refresh),
-      scarredTalentCard(data, persist),
-      restCard(data, persist, refresh),
-      currencyNotesCard(data, persist)
-    )
+    ...[
+      el(
+        "div",
+        { class: "tracker-grid" },
+        hpCard(data, charLevel, persist, refresh),
+        scarredTalentCard(data, persist),
+        restCard(data, persist, refresh),
+        currencyNotesCard(data, persist)
+      ),
+      charData ? weaponsSection(charData) : null,
+    ].filter(Boolean)
   );
 }
 

@@ -378,17 +378,17 @@ function weaponsSection(data) {
   );
 }
 
-function spellsSection(data) {
+function spellsSection(data, { omitIntro = false } = {}) {
   const st = data.scarredTalent;
   const sp = data.spells;
   return el(
     "div",
     { class: "char-card" },
     el("h2", {}, "Scarred Talent & Spells"),
-    el("p", { class: "k-desc" }, st.intro),
-    el("p", { class: "k-desc" }, st.dieRules),
-    el("p", { class: "k-desc" }, `Scar Replenishment: ${st.scarReplenishment}`),
-    el("p", { class: "k-desc" }, sp.note),
+    omitIntro ? null : el("p", { class: "k-desc" }, st.intro),
+    omitIntro ? null : el("p", { class: "k-desc" }, st.dieRules),
+    omitIntro ? null : el("p", { class: "k-desc" }, `Scar Replenishment: ${st.scarReplenishment}`),
+    omitIntro ? null : el("p", { class: "k-desc" }, sp.note),
     el(
       "table",
       { class: "data-table" },
@@ -814,7 +814,7 @@ async function renderTracker() {
       ),
       charData ? abilityScoresSection(charData) : null,
       charData ? weaponsSection(charData) : null,
-      charData ? spellsSection(charData) : null,
+      charData ? spellsSection(charData, { omitIntro: true }) : null,
     ].filter(Boolean)
   );
 }

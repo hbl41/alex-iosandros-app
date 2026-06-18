@@ -18,6 +18,7 @@
         <button class="tab" data-tab="kingdoms">13 Kingdoms</button>
         <button class="tab" data-tab="history">History</button>
         <button class="tab" data-tab="map">Map</button>
+        <button class="tab" data-tab="dice">Dice roller</button>
       </nav>
     </header>
 
@@ -104,6 +105,16 @@
           <button class="btn" id="mapReset">Reset</button>
         </div>
         <p class="map-hint">Drag to pan, scroll or use the buttons to zoom.</p>
+      </section>
+
+      <!-- ===== Dice roller (embedded rgbstudios.org) ===== -->
+      <section class="panel" data-panel="dice">
+        <iframe
+          class="dice-frame"
+          src="https://rgbstudios.org/projects/dnd-dice?m="
+          title="Dice roller"
+          loading="lazy"
+        ></iframe>
       </section>
     </main>
 

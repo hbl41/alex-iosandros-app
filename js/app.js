@@ -1221,7 +1221,7 @@ async function renderNotes() {
         notesDoc(
           characters,
           saveChars,
-          "Running list of characters Manfred has met and how they relate to him (≤500 words), maintained by Claude. You can edit it too."
+          "Running list of characters Manfred has met and how they relate to him — up to 500 words per character, kept concise. Maintained by Claude; you can edit it too."
         )
       );
     else body.replaceChildren(searchPanel(getEntries, navigate));

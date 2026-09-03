@@ -1485,7 +1485,7 @@ async function renderNotes() {
       body.replaceChildren(
         sessionNotebook(claudeNotes, saveClaude, {
           intro:
-            "Session summaries written by Claude (≤2,500 words each). You can edit them too.",
+            "Session summaries written by Claude (≤1,000 words each). You can edit them too.",
           onEdit,
           onRerender: () => hl.refresh(),
         })
@@ -1495,7 +1495,7 @@ async function renderNotes() {
         notesDoc(
           characters,
           saveChars,
-          "Running list of characters Manfred has met and how they relate to him — up to 500 words per character, kept concise. Maintained by Claude; you can edit it too.",
+          "Running list of characters Manfred has met and how they relate to him — up to 100 words per character, kept concise. Maintained by Claude; you can edit it too.",
           onEdit
         )
       );

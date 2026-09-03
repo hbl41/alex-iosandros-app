@@ -836,6 +836,401 @@ function clearAllCookies() {
   }
 }
 
+// ============================================================
+//  NOTES  (player session notes, Claude notes, characters, search)
+//  One "Notes" tab holds four inner sections that read/write three
+//  state keys: notes, claudeNotes, characters.
+// ============================================================
+
+const uid = () =>
+  crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random()}`;
+
+function stripHtml(html) {
+  const d = el("div");
+  d.innerHTML = html || "";
+  return d.textContent || "";
+}
+
+// A contenteditable box with a basic formatting toolbar (bold, italic,
+// bullet list). Autosaves via onChange (debounced) as the user types.
+function notesEditor(initialHtml, onChange) {
+  const editor = el("div", {
+    class: "notes-editor",
+    contenteditable: "true",
+    spellcheck: "true",
+  });
+  editor.innerHTML = initialHtml || "";
+
+  const fmtBtn = (label, cmd, title) =>
+    el(
+      "button",
+      {
+        class: "btn btn-small fmt-btn",
+        title,
+        onmousedown: (e) => e.preventDefault(), // keep the selection
+        onclick: () => {
+          editor.focus();
+          document.execCommand(cmd, false, null);
+          onChange(editor.innerHTML);
+        },
+      },
+      label
+    );
+
+  const toolbar = el(
+    "div",
+    { class: "notes-toolbar" },
+    fmtBtn("B", "bold", "Bold"),
+    fmtBtn("I", "italic", "Italic"),
+    fmtBtn("• List", "insertUnorderedList", "Bullet list")
+  );
+
+  let t;
+  editor.addEventListener("input", () => {
+    clearTimeout(t);
+    t = setTimeout(() => onChange(editor.innerHTML), 500);
+  });
+
+  return { toolbar, editor };
+}
+
+// A multi-session notebook: a strip of renamable session tabs plus the
+// editor for the active one. Used for both "My Notes" and "Claude Notes".
+function sessionNotebook(store, save, opts = {}) {
+  if (!Array.isArray(store.sessions)) store.sessions = [];
+  if (store.sessions.length === 0)
+    store.sessions.push({ id: uid(), title: "Session 1", html: "" });
+  if (!store.sessions.some((s) => s.id === store.activeId))
+    store.activeId = store.sessions[0].id;
+
+  const container = el("div", { class: "notebook" });
+  let editingId = null;
+
+  function render() {
+    const active =
+      store.sessions.find((s) => s.id === store.activeId) || store.sessions[0];
+    store.activeId = active.id;
+
+    const strip = el("div", { class: "session-tabs" });
+    for (const s of store.sessions) {
+      if (s.id === editingId) {
+        const input = el("input", { class: "session-rename", value: s.title });
+        let committed = false;
+        const commit = () => {
+          if (committed) return;
+          committed = true;
+          s.title = input.value.trim() || s.title;
+          editingId = null;
+          save();
+          render();
+        };
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") commit();
+          else if (e.key === "Escape") {
+            committed = true;
+            editingId = null;
+            render();
+          }
+        });
+        input.addEventListener("blur", commit);
+        strip.append(input);
+        setTimeout(() => {
+          input.focus();
+          input.select();
+        }, 0);
+      } else {
+        strip.append(
+          el(
+            "button",
+            {
+              class: "session-tab" + (s.id === active.id ? " active" : ""),
+              title: "Click to open · double-click to rename",
+              onclick: () => {
+                store.activeId = s.id;
+                save();
+                render();
+              },
+              ondblclick: () => {
+                editingId = s.id;
+                render();
+              },
+            },
+            s.title || "Untitled"
+          )
+        );
+      }
+    }
+    strip.append(
+      el(
+        "button",
+        {
+          class: "session-tab add",
+          title: opts.addLabel || "New session",
+          onclick: () => {
+            const s = {
+              id: uid(),
+              title: `Session ${store.sessions.length + 1}`,
+              html: "",
+            };
+            store.sessions.push(s);
+            store.activeId = s.id;
+            save();
+            render();
+          },
+        },
+        "＋ New"
+      )
+    );
+
+    const { toolbar, editor } = notesEditor(active.html, (html) => {
+      active.html = html;
+      save();
+    });
+
+    const renameBtn = el(
+      "button",
+      {
+        class: "btn btn-small",
+        onclick: () => {
+          editingId = active.id;
+          render();
+        },
+      },
+      "Rename"
+    );
+    const delBtn = el(
+      "button",
+      {
+        class: "btn btn-small",
+        onclick: () => {
+          if (store.sessions.length <= 1) return;
+          if (!confirm(`Delete "${active.title}"? This can't be undone.`)) return;
+          store.sessions = store.sessions.filter((x) => x.id !== active.id);
+          store.activeId = store.sessions[0].id;
+          save();
+          render();
+        },
+      },
+      "Delete session"
+    );
+
+    container.replaceChildren(
+      ...[
+        strip,
+        opts.intro ? el("p", { class: "k-desc" }, opts.intro) : null,
+        toolbar,
+        editor,
+        el("div", { class: "btn-row" }, renameBtn, delBtn),
+      ].filter(Boolean)
+    );
+  }
+
+  render();
+  return container;
+}
+
+// A single running document (used for the Characters list).
+function notesDoc(store, save, intro) {
+  const { toolbar, editor } = notesEditor(store.html || "", (html) => {
+    store.html = html;
+    save();
+  });
+  return el(
+    "div",
+    { class: "notebook" },
+    intro ? el("p", { class: "k-desc" }, intro) : null,
+    toolbar,
+    editor
+  );
+}
+
+// Keyword search across every note. getEntries() returns the current
+// searchable text; navigate(entry) jumps to where a match lives.
+function searchPanel(getEntries, navigate) {
+  const input = el("input", {
+    type: "search",
+    class: "search-input",
+    placeholder: "Search all notes for a keyword…",
+  });
+  const results = el("div", { class: "search-results" });
+
+  const run = () => {
+    const q = input.value.trim();
+    results.replaceChildren();
+    if (!q) return;
+    const ql = q.toLowerCase();
+    let total = 0;
+    const groups = [];
+    for (const entry of getEntries()) {
+      const text = entry.text;
+      const lower = text.toLowerCase();
+      const hits = [];
+      let i = lower.indexOf(ql);
+      while (i !== -1) {
+        hits.push(i);
+        i = lower.indexOf(ql, i + ql.length);
+      }
+      if (!hits.length) continue;
+      total += hits.length;
+      const group = el("div", { class: "search-group" });
+      group.append(
+        el(
+          "button",
+          { class: "search-src", onclick: () => navigate(entry) },
+          `${entry.label} · ${hits.length} match${hits.length > 1 ? "es" : ""}`
+        )
+      );
+      for (const h of hits.slice(0, 6)) {
+        const s = Math.max(0, h - 45);
+        const e = Math.min(text.length, h + q.length + 45);
+        group.append(
+          el(
+            "div",
+            { class: "search-snippet", onclick: () => navigate(entry) },
+            s > 0 ? "… " : "",
+            text.slice(s, h),
+            el("mark", {}, text.slice(h, h + q.length)),
+            text.slice(h + q.length, e),
+            e < text.length ? " …" : ""
+          )
+        );
+      }
+      groups.push(group);
+    }
+    results.append(
+      el(
+        "div",
+        { class: "search-count" },
+        total
+          ? `${total} match${total > 1 ? "es" : ""} across ${groups.length} note${
+              groups.length > 1 ? "s" : ""
+            }`
+          : "No matches."
+      )
+    );
+    groups.forEach((g) => results.append(g));
+  };
+
+  let t;
+  input.addEventListener("input", () => {
+    clearTimeout(t);
+    t = setTimeout(run, 200);
+  });
+
+  return el(
+    "div",
+    { class: "notebook" },
+    input,
+    el(
+      "p",
+      { class: "k-desc" },
+      "Searches your session notes, Claude Notes, and the Characters list."
+    ),
+    results
+  );
+}
+
+async function renderNotes() {
+  const root = $("#notes-root");
+  if (!root) return;
+
+  const notes = (await fetchState("notes")) || {};
+  const claudeNotes = (await fetchState("claudeNotes")) || {};
+  const characters = (await fetchState("characters")) || {};
+
+  const saveNotes = () => saveState("notes", notes);
+  const saveClaude = () => saveState("claudeNotes", claudeNotes);
+  const saveChars = () => saveState("characters", characters);
+
+  let section = "mine";
+
+  const nav = el("div", { class: "notes-nav" });
+  const body = el("div", { class: "notes-body" });
+
+  const setSection = (s) => {
+    section = s;
+    draw();
+  };
+
+  const getEntries = () => {
+    const entries = [];
+    (notes.sessions || []).forEach((s) =>
+      entries.push({
+        label: `My Notes · ${s.title || "Untitled"}`,
+        text: stripHtml(s.html),
+        section: "mine",
+        sessionId: s.id,
+      })
+    );
+    (claudeNotes.sessions || []).forEach((s) =>
+      entries.push({
+        label: `Claude Notes · ${s.title || "Untitled"}`,
+        text: stripHtml(s.html),
+        section: "claude",
+        sessionId: s.id,
+      })
+    );
+    entries.push({
+      label: "Characters",
+      text: stripHtml(characters.html),
+      section: "characters",
+    });
+    return entries.filter((e) => e.text.trim());
+  };
+
+  const navigate = (entry) => {
+    if (entry.section === "mine" && entry.sessionId) notes.activeId = entry.sessionId;
+    if (entry.section === "claude" && entry.sessionId)
+      claudeNotes.activeId = entry.sessionId;
+    setSection(entry.section);
+  };
+
+  function draw() {
+    const mk = (id, label) =>
+      el(
+        "button",
+        {
+          class: "notes-nav-btn" + (section === id ? " active" : ""),
+          onclick: () => setSection(id),
+        },
+        label
+      );
+    nav.replaceChildren(
+      mk("mine", "My Notes"),
+      mk("claude", "Claude Notes"),
+      mk("characters", "Characters"),
+      mk("search", "🔍 Search")
+    );
+
+    if (section === "mine")
+      body.replaceChildren(
+        sessionNotebook(notes, saveNotes, {
+          intro:
+            "Your session notes — use ＋ New for each session, double-click a tab to rename it.",
+        })
+      );
+    else if (section === "claude")
+      body.replaceChildren(
+        sessionNotebook(claudeNotes, saveClaude, {
+          intro:
+            "Session summaries written by Claude (≤2,500 words each). You can edit them too.",
+        })
+      );
+    else if (section === "characters")
+      body.replaceChildren(
+        notesDoc(
+          characters,
+          saveChars,
+          "Running list of characters Manfred has met and how they relate to him (≤500 words), maintained by Claude. You can edit it too."
+        )
+      );
+    else body.replaceChildren(searchPanel(getEntries, navigate));
+  }
+
+  root.replaceChildren(nav, body);
+  draw();
+}
+
 // expose helpers so Claude-added code (here or in other files) can reuse them
 window.IO = { $, $$, el, fetchState, saveState, activateTab };
 
@@ -851,4 +1246,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap();
   renderCharacter();
   renderTracker();
+  renderNotes();
 });

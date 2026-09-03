@@ -7,6 +7,8 @@ const now = () => new Date().toISOString();
 
 const ALLOWED_KEYS = new Set([
   'notes',
+  'claudeNotes',
+  'characters',
   'session',
   'date',
   'budget',

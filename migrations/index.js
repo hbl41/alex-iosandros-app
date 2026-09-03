@@ -17,5 +17,6 @@ import m0006 from "./0006_tracker_seed.js";
 import m0007 from "./0007_character_kunai_fix.js";
 import m0008 from "./0008_lyocane_to_traits.js";
 import m0009 from "./0009_lyocane_capitalization.js";
+import m0010 from "./0010_session1_notes.js";
 
-export const MIGRATIONS = [m0001, m0002, m0004, m0005, m0006, m0007, m0008, m0009];
+export const MIGRATIONS = [m0001, m0002, m0004, m0005, m0006, m0007, m0008, m0009, m0010];

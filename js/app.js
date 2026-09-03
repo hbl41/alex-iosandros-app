@@ -853,7 +853,9 @@ function stripHtml(html) {
 
 // A contenteditable box with a basic formatting toolbar (bold, italic,
 // bullet list). Autosaves via onChange (debounced) as the user types.
-function notesEditor(initialHtml, onChange) {
+// onEdit fires immediately on any content change (used to drop search
+// highlights the moment the user starts editing).
+function notesEditor(initialHtml, onChange, onEdit) {
   const editor = el("div", {
     class: "notes-editor",
     contenteditable: "true",
@@ -869,6 +871,7 @@ function notesEditor(initialHtml, onChange) {
         title,
         onmousedown: (e) => e.preventDefault(), // keep the selection
         onclick: () => {
+          onEdit?.();
           editor.focus();
           document.execCommand(cmd, false, null);
           onChange(editor.innerHTML);
@@ -887,6 +890,7 @@ function notesEditor(initialHtml, onChange) {
 
   let t;
   editor.addEventListener("input", () => {
+    onEdit?.();
     clearTimeout(t);
     t = setTimeout(() => onChange(editor.innerHTML), 500);
   });
@@ -982,10 +986,14 @@ function sessionNotebook(store, save, opts = {}) {
       )
     );
 
-    const { toolbar, editor } = notesEditor(active.html, (html) => {
-      active.html = html;
-      save();
-    });
+    const { toolbar, editor } = notesEditor(
+      active.html,
+      (html) => {
+        active.html = html;
+        save();
+      },
+      opts.onEdit
+    );
 
     const renameBtn = el(
       "button",
@@ -1023,6 +1031,11 @@ function sessionNotebook(store, save, opts = {}) {
         el("div", { class: "btn-row" }, renameBtn, delBtn),
       ].filter(Boolean)
     );
+
+    // Re-apply search highlighting after a re-render (session switch,
+    // rename, etc.). Only once the container is on screen — the first
+    // render happens before it's mounted, and draw() handles that case.
+    if (opts.onRerender && container.isConnected) opts.onRerender();
   }
 
   render();
@@ -1030,11 +1043,15 @@ function sessionNotebook(store, save, opts = {}) {
 }
 
 // A single running document (used for the Characters list).
-function notesDoc(store, save, intro) {
-  const { toolbar, editor } = notesEditor(store.html || "", (html) => {
-    store.html = html;
-    save();
-  });
+function notesDoc(store, save, intro, onEdit) {
+  const { toolbar, editor } = notesEditor(
+    store.html || "",
+    (html) => {
+      store.html = html;
+      save();
+    },
+    onEdit
+  );
   return el(
     "div",
     { class: "notebook" },
@@ -1045,12 +1062,15 @@ function notesDoc(store, save, intro) {
 }
 
 // Keyword search across every note. getEntries() returns the current
-// searchable text; navigate(entry) jumps to where a match lives.
-function searchPanel(getEntries, navigate) {
+// searchable text; navigate(entry) jumps to where a match lives; hl is
+// the shared highlight controller (keeps matches highlighted in the
+// notes while a search term is active).
+function searchPanel(getEntries, navigate, hl) {
   const input = el("input", {
     type: "search",
     class: "search-input",
     placeholder: "Search all notes for a keyword…",
+    value: hl.term,
   });
   const results = el("div", { class: "search-results" });
 
@@ -1113,9 +1133,12 @@ function searchPanel(getEntries, navigate) {
 
   let t;
   input.addEventListener("input", () => {
+    hl.setTerm(input.value.trim()); // update highlight term immediately
     clearTimeout(t);
     t = setTimeout(run, 200);
   });
+
+  if (hl.term) run(); // restore results when returning to search
 
   return el(
     "div",
@@ -1124,7 +1147,7 @@ function searchPanel(getEntries, navigate) {
     el(
       "p",
       { class: "k-desc" },
-      "Searches your session notes, Claude Notes, and the Characters list."
+      "Searches your session notes, Claude Notes, and the Characters list. Click a result to jump to it — matches stay highlighted in your notes until you clear the search box."
     ),
     results
   );
@@ -1146,6 +1169,72 @@ async function renderNotes() {
 
   const nav = el("div", { class: "notes-nav" });
   const body = el("div", { class: "notes-body" });
+
+  // Search-highlight controller. Highlights every match of the active
+  // search term in whichever note is on screen, using the CSS Custom
+  // Highlight API so the note's saved content is never modified. Stays
+  // on across notes until the search box is cleared.
+  const HL_NAME = "note-search";
+  const hlSupported =
+    typeof window !== "undefined" &&
+    window.CSS &&
+    CSS.highlights &&
+    typeof Highlight !== "undefined";
+  const hl = {
+    term: "",
+    scrollNext: false,
+    clear() {
+      if (hlSupported) {
+        try {
+          CSS.highlights.delete(HL_NAME);
+        } catch {}
+      }
+    },
+    setTerm(t) {
+      this.term = t;
+      this.refresh();
+    },
+    refresh() {
+      if (!hlSupported) return;
+      const editor = body.querySelector(".notes-editor");
+      if (!this.term || !editor) {
+        this.clear();
+        return;
+      }
+      const q = this.term.toLowerCase();
+      const ranges = [];
+      let first = null;
+      const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const text = node.nodeValue.toLowerCase();
+        let i = text.indexOf(q);
+        while (i !== -1) {
+          const r = document.createRange();
+          r.setStart(node, i);
+          r.setEnd(node, i + q.length);
+          ranges.push(r);
+          if (!first) first = r;
+          i = text.indexOf(q, i + q.length);
+        }
+      }
+      if (ranges.length) {
+        CSS.highlights.set(HL_NAME, new Highlight(...ranges));
+        if (this.scrollNext && first) {
+          try {
+            first.startContainer.parentElement?.scrollIntoView({
+              block: "center",
+              behavior: "smooth",
+            });
+          } catch {}
+        }
+      } else {
+        this.clear();
+      }
+      this.scrollNext = false;
+    },
+  };
+  const onEdit = () => hl.clear();
 
   const setSection = (s) => {
     section = s;
@@ -1182,6 +1271,7 @@ async function renderNotes() {
     if (entry.section === "mine" && entry.sessionId) notes.activeId = entry.sessionId;
     if (entry.section === "claude" && entry.sessionId)
       claudeNotes.activeId = entry.sessionId;
+    hl.scrollNext = true; // scroll to the first match in the note we open
     setSection(entry.section);
   };
 
@@ -1207,6 +1297,8 @@ async function renderNotes() {
         sessionNotebook(notes, saveNotes, {
           intro:
             "Your session notes — use ＋ New for each session, double-click a tab to rename it.",
+          onEdit,
+          onRerender: () => hl.refresh(),
         })
       );
     else if (section === "claude")
@@ -1214,6 +1306,8 @@ async function renderNotes() {
         sessionNotebook(claudeNotes, saveClaude, {
           intro:
             "Session summaries written by Claude (≤2,500 words each). You can edit them too.",
+          onEdit,
+          onRerender: () => hl.refresh(),
         })
       );
     else if (section === "characters")
@@ -1221,10 +1315,15 @@ async function renderNotes() {
         notesDoc(
           characters,
           saveChars,
-          "Running list of characters Manfred has met and how they relate to him — up to 500 words per character, kept concise. Maintained by Claude; you can edit it too."
+          "Running list of characters Manfred has met and how they relate to him — up to 500 words per character, kept concise. Maintained by Claude; you can edit it too.",
+          onEdit
         )
       );
-    else body.replaceChildren(searchPanel(getEntries, navigate));
+    else body.replaceChildren(searchPanel(getEntries, navigate, hl));
+
+    // Re-apply search highlighting to whatever note is now on screen
+    // (the content is already mounted — replaceChildren is synchronous).
+    hl.refresh();
   }
 
   root.replaceChildren(nav, body);

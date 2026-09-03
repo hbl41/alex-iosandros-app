@@ -275,6 +275,10 @@ h2 { font-size: 1.05rem; margin: 24px 0 12px; }
 }
 .search-snippet:hover { border-left-color: var(--muted); }
 .search-snippet mark { background: var(--muted); color: var(--bg); border-radius: 2px; padding: 0 2px; }
+
+/* Live keyword highlight inside a note (CSS Custom Highlight API — does
+   not alter the note's saved content). */
+::highlight(note-search) { background-color: #d8a24a; color: #15161a; }
 .btn {
   background: var(--card);
   color: var(--text);

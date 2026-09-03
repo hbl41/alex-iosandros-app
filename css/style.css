@@ -251,6 +251,24 @@ h2 { font-size: 1.05rem; margin: 24px 0 12px; }
   color: var(--text);
   margin-bottom: 6px;
 }
+.replace-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 6px; }
+.replace-bar .search-input { flex: 1 1 200px; margin-bottom: 0; }
+.case-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+.scope-wrap { display: inline-flex; align-items: center; gap: 5px; font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+.scope-select {
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 220px;
+}
+.search-snippet-row { display: flex; align-items: flex-start; gap: 8px; }
+.search-snippet-row .search-snippet { flex: 1; }
+.replace-one { flex: 0 0 auto; align-self: center; }
+
 .search-count { font-size: 0.8rem; color: var(--muted); margin: 8px 0; }
 .search-group { margin-bottom: 14px; }
 .search-src {

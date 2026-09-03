@@ -851,6 +851,77 @@ function stripHtml(html) {
   return d.textContent || "";
 }
 
+// Case-insensitive-aware occurrence offsets of `find` within `text`.
+function matchOffsets(text, find, matchCase) {
+  const out = [];
+  if (!find) return out;
+  const hay = matchCase ? text : text.toLowerCase();
+  const needle = matchCase ? find : find.toLowerCase();
+  let i = hay.indexOf(needle);
+  while (i !== -1) {
+    out.push(i);
+    i = hay.indexOf(needle, i + needle.length);
+  }
+  return out;
+}
+
+// Replace every occurrence of `find` with `repl` inside an HTML string,
+// operating only on text nodes so formatting (bold, lists, etc.) is
+// preserved. Matches are confined to a single text node.
+function replaceAllInHtml(html, find, repl, matchCase) {
+  const container = el("div");
+  container.innerHTML = html || "";
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let n;
+  while ((n = walker.nextNode())) nodes.push(n);
+  let count = 0;
+  const needle = matchCase ? find : (find || "").toLowerCase();
+  for (const node of nodes) {
+    const str = node.nodeValue;
+    const hay = matchCase ? str : str.toLowerCase();
+    if (!needle) continue;
+    let res = "";
+    let i = 0;
+    let idx = hay.indexOf(needle);
+    let c = 0;
+    while (idx !== -1) {
+      res += str.slice(i, idx) + repl;
+      i = idx + needle.length;
+      c++;
+      idx = hay.indexOf(needle, i);
+    }
+    if (c > 0) {
+      res += str.slice(i);
+      node.nodeValue = res;
+      count += c;
+    }
+  }
+  return { html: container.innerHTML, count };
+}
+
+// Replace a single occurrence located at `offset` (a position in the
+// note's plain text) with `repl`. Returns { ok, html }.
+function replaceAtTextOffset(html, offset, findLen, repl) {
+  const container = el("div");
+  container.innerHTML = html || "";
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  let acc = 0;
+  let node;
+  while ((node = walker.nextNode())) {
+    const len = node.nodeValue.length;
+    if (offset < acc + len) {
+      const local = offset - acc;
+      if (local + findLen > len) return { ok: false }; // spans nodes — skip
+      node.nodeValue =
+        node.nodeValue.slice(0, local) + repl + node.nodeValue.slice(local + findLen);
+      return { ok: true, html: container.innerHTML };
+    }
+    acc += len;
+  }
+  return { ok: false };
+}
+
 // A contenteditable box with a basic formatting toolbar (bold, italic,
 // bullet list). Autosaves via onChange (debounced) as the user types.
 // onEdit fires immediately on any content change (used to drop search
@@ -1061,60 +1132,109 @@ function notesDoc(store, save, intro, onEdit) {
   );
 }
 
-// Keyword search across every note. getEntries() returns the current
-// searchable text; navigate(entry) jumps to where a match lives; hl is
-// the shared highlight controller (keeps matches highlighted in the
-// notes while a search term is active).
+// Find & replace across every note. getEntries() returns the current
+// searchable notes (with refs so replacements can be saved); navigate
+// jumps to a match; hl is the shared highlight controller.
 function searchPanel(getEntries, navigate, hl) {
-  const input = el("input", {
+  const MAX_ROWS = 50; // per-note match rows shown for individual replace
+
+  const findInput = el("input", {
     type: "search",
     class: "search-input",
-    placeholder: "Search all notes for a keyword…",
+    placeholder: "Find…",
     value: hl.term,
   });
+  const replaceInput = el("input", {
+    type: "text",
+    class: "search-input",
+    placeholder: "Replace with…",
+  });
+  const caseChk = el("input", { type: "checkbox", checked: hl.matchCase || null });
+  const scopeSel = el("select", { class: "scope-select" });
+  const replaceAllBtn = el("button", { class: "btn btn-small" }, "Replace all");
   const results = el("div", { class: "search-results" });
 
+  const scopedEntries = (entries) =>
+    scopeSel.value && scopeSel.value !== "all"
+      ? entries.filter((e) => e.key === scopeSel.value)
+      : entries;
+
+  const buildScopeOptions = (entries) => {
+    const cur = scopeSel.value || "all";
+    scopeSel.replaceChildren(
+      el("option", { value: "all" }, "All notes"),
+      ...entries.map((e) => el("option", { value: e.key }, e.label))
+    );
+    scopeSel.value = [...scopeSel.options].some((o) => o.value === cur) ? cur : "all";
+  };
+
   const run = () => {
-    const q = input.value.trim();
+    const q = findInput.value.trim();
+    const matchCase = caseChk.checked;
+    hl.matchCase = matchCase;
+    const entries = getEntries();
+    buildScopeOptions(entries);
+    const scoped = scopedEntries(entries);
     results.replaceChildren();
     if (!q) return;
-    const ql = q.toLowerCase();
+
     let total = 0;
+    let notesWith = 0;
     const groups = [];
-    for (const entry of getEntries()) {
+    for (const entry of scoped) {
       const text = entry.text;
-      const lower = text.toLowerCase();
-      const hits = [];
-      let i = lower.indexOf(ql);
-      while (i !== -1) {
-        hits.push(i);
-        i = lower.indexOf(ql, i + ql.length);
-      }
-      if (!hits.length) continue;
-      total += hits.length;
+      const offs = matchOffsets(text, q, matchCase);
+      if (!offs.length) continue;
+      notesWith++;
+      total += offs.length;
       const group = el("div", { class: "search-group" });
       group.append(
         el(
           "button",
           { class: "search-src", onclick: () => navigate(entry) },
-          `${entry.label} · ${hits.length} match${hits.length > 1 ? "es" : ""}`
+          `${entry.label} · ${offs.length} match${offs.length > 1 ? "es" : ""}`
         )
       );
-      for (const h of hits.slice(0, 6)) {
-        const s = Math.max(0, h - 45);
-        const e = Math.min(text.length, h + q.length + 45);
+      for (const h of offs.slice(0, MAX_ROWS)) {
+        const s = Math.max(0, h - 40);
+        const e = Math.min(text.length, h + q.length + 40);
         group.append(
           el(
             "div",
-            { class: "search-snippet", onclick: () => navigate(entry) },
-            s > 0 ? "… " : "",
-            text.slice(s, h),
-            el("mark", {}, text.slice(h, h + q.length)),
-            text.slice(h + q.length, e),
-            e < text.length ? " …" : ""
+            { class: "search-snippet-row" },
+            el(
+              "div",
+              { class: "search-snippet", onclick: () => navigate(entry) },
+              s > 0 ? "… " : "",
+              text.slice(s, h),
+              el("mark", {}, text.slice(h, h + q.length)),
+              text.slice(h + q.length, e),
+              e < text.length ? " …" : ""
+            ),
+            el(
+              "button",
+              {
+                class: "btn btn-small replace-one",
+                title: "Replace this match",
+                onclick: () => {
+                  const res = replaceAtTextOffset(entry.ref.html, h, q.length, replaceInput.value);
+                  if (res.ok) {
+                    entry.ref.html = res.html;
+                    entry.save();
+                  }
+                  run();
+                  hl.refresh();
+                },
+              },
+              "Replace"
+            )
           )
         );
       }
+      if (offs.length > MAX_ROWS)
+        group.append(
+          el("div", { class: "k-desc" }, `…and ${offs.length - MAX_ROWS} more (use Replace all).`)
+        );
       groups.push(group);
     }
     results.append(
@@ -1122,8 +1242,8 @@ function searchPanel(getEntries, navigate, hl) {
         "div",
         { class: "search-count" },
         total
-          ? `${total} match${total > 1 ? "es" : ""} across ${groups.length} note${
-              groups.length > 1 ? "s" : ""
+          ? `${total} match${total > 1 ? "es" : ""} across ${notesWith} note${
+              notesWith > 1 ? "s" : ""
             }`
           : "No matches."
       )
@@ -1131,23 +1251,73 @@ function searchPanel(getEntries, navigate, hl) {
     groups.forEach((g) => results.append(g));
   };
 
+  const doReplaceAll = () => {
+    const q = findInput.value.trim();
+    if (!q) return;
+    const matchCase = caseChk.checked;
+    const repl = replaceInput.value;
+    const scoped = scopedEntries(getEntries());
+    let total = 0;
+    let notes = 0;
+    for (const e of scoped) {
+      const c = matchOffsets(e.text, q, matchCase).length;
+      if (c) {
+        total += c;
+        notes++;
+      }
+    }
+    if (!total) return;
+    if (
+      !confirm(
+        `Replace ${total} occurrence${total > 1 ? "s" : ""} of "${q}" with "${repl}" across ${notes} note${
+          notes > 1 ? "s" : ""
+        }? This can't be undone.`
+      )
+    )
+      return;
+    for (const e of scoped) {
+      const res = replaceAllInHtml(e.ref.html, q, repl, matchCase);
+      if (res.count > 0) {
+        e.ref.html = res.html;
+        e.save();
+      }
+    }
+    run();
+    hl.refresh();
+  };
+
   let t;
-  input.addEventListener("input", () => {
-    hl.setTerm(input.value.trim()); // update highlight term immediately
+  findInput.addEventListener("input", () => {
+    hl.setTerm(findInput.value.trim());
     clearTimeout(t);
     t = setTimeout(run, 200);
   });
+  caseChk.addEventListener("change", () => {
+    hl.matchCase = caseChk.checked;
+    run();
+    hl.refresh();
+  });
+  scopeSel.addEventListener("change", run);
+  replaceAllBtn.addEventListener("click", doReplaceAll);
 
-  if (hl.term) run(); // restore results when returning to search
+  if (hl.term) run(); // restore state when returning to this section
 
   return el(
     "div",
     { class: "notebook" },
-    input,
+    el(
+      "div",
+      { class: "replace-bar" },
+      findInput,
+      replaceInput,
+      el("label", { class: "case-toggle" }, caseChk, "Match case"),
+      el("label", { class: "scope-wrap" }, "In: ", scopeSel),
+      replaceAllBtn
+    ),
     el(
       "p",
       { class: "k-desc" },
-      "Searches your session notes, Claude Notes, and the Characters list. Click a result to jump to it — matches stay highlighted in your notes until you clear the search box."
+      "Find across your notes; use a match's Replace button for one at a time, or Replace all. Matches stay highlighted in your notes until you clear the Find box."
     ),
     results
   );
@@ -1182,6 +1352,7 @@ async function renderNotes() {
     typeof Highlight !== "undefined";
   const hl = {
     term: "",
+    matchCase: false,
     scrollNext: false,
     clear() {
       if (hlSupported) {
@@ -1201,13 +1372,13 @@ async function renderNotes() {
         this.clear();
         return;
       }
-      const q = this.term.toLowerCase();
+      const q = this.matchCase ? this.term : this.term.toLowerCase();
       const ranges = [];
       let first = null;
       const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
       let node;
       while ((node = walker.nextNode())) {
-        const text = node.nodeValue.toLowerCase();
+        const text = this.matchCase ? node.nodeValue : node.nodeValue.toLowerCase();
         let i = text.indexOf(q);
         while (i !== -1) {
           const r = document.createRange();
@@ -1245,24 +1416,33 @@ async function renderNotes() {
     const entries = [];
     (notes.sessions || []).forEach((s) =>
       entries.push({
+        key: `mine:${s.id}`,
         label: `My Notes · ${s.title || "Untitled"}`,
         text: stripHtml(s.html),
         section: "mine",
         sessionId: s.id,
+        ref: s,
+        save: saveNotes,
       })
     );
     (claudeNotes.sessions || []).forEach((s) =>
       entries.push({
+        key: `claude:${s.id}`,
         label: `Claude Notes · ${s.title || "Untitled"}`,
         text: stripHtml(s.html),
         section: "claude",
         sessionId: s.id,
+        ref: s,
+        save: saveClaude,
       })
     );
     entries.push({
+      key: "characters",
       label: "Characters",
       text: stripHtml(characters.html),
       section: "characters",
+      ref: characters,
+      save: saveChars,
     });
     return entries.filter((e) => e.text.trim());
   };
@@ -1289,7 +1469,7 @@ async function renderNotes() {
       mk("mine", "My Notes"),
       mk("claude", "Claude Notes"),
       mk("characters", "Characters"),
-      mk("search", "🔍 Search")
+      mk("search", "🔍 Find & Replace")
     );
 
     if (section === "mine")

@@ -836,6 +836,39 @@ function clearAllCookies() {
   }
 }
 
+// The "Refresh" button must pull the latest deploy even when the browser
+// is holding stale copies of the code. A plain location.reload() reuses
+// the disk cache, so instead we clear cookies + any Cache Storage, then
+// re-fetch the core files bypassing the HTTP cache (cache: "reload"),
+// which overwrites the cached copies so the reload below serves the new
+// version.
+async function hardRefresh() {
+  clearAllCookies();
+  try {
+    if (window.caches) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {}
+  try {
+    if (navigator.serviceWorker) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+  } catch {}
+  const assets = [
+    location.pathname,
+    "index.html",
+    "js/app.js",
+    "css/style.css",
+    "data/data.js",
+  ];
+  try {
+    await Promise.all(assets.map((a) => fetch(a, { cache: "reload" }).catch(() => {})));
+  } catch {}
+  location.reload();
+}
+
 // ============================================================
 //  NOTES  (player session notes, Claude notes, characters, search)
 //  One "Notes" tab holds four inner sections that read/write three
@@ -1516,9 +1549,11 @@ window.IO = { $, $$, el, fetchState, saveState, activateTab };
 // ---------- boot ----------
 document.addEventListener("DOMContentLoaded", () => {
   wireTabs();
-  $("#refreshBtn")?.addEventListener("click", () => {
-    clearAllCookies();
-    location.reload();
+  $("#refreshBtn")?.addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.textContent = "↻ Refreshing…";
+    hardRefresh();
   });
   renderKingdoms();
   renderHistory();

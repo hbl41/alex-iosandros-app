@@ -1,3 +1,19 @@
 /*
   X-Content-Type-Options: nosniff
-  Cache-Control: no-cache
+
+# Never cache the app shell, code, styles, world data, or API responses,
+# so every visit loads the latest deploy instead of a stale cached copy.
+# (Images and other assets under /assets keep the browser default so the
+# map isn't re-downloaded each visit.)
+/
+  Cache-Control: no-store
+/index.html
+  Cache-Control: no-store
+/js/*
+  Cache-Control: no-store
+/css/*
+  Cache-Control: no-store
+/data/*
+  Cache-Control: no-store
+/api/*
+  Cache-Control: no-store

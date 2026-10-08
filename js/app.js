@@ -217,13 +217,14 @@ function charHeader(data) {
   const summaryItems = [
     ["Class", `${summary.class} (${summary.subclass})`],
     ["Level", summary.level],
+    summary.bloodKnighthood ? ["Blood Knighthood", summary.bloodKnighthood] : null,
     ["Background", summary.background],
     ["AC", `${summary.ac} — ${summary.acNote}`],
     ["HP (max)", summary.hpTotal],
     ["Origin", summary.origin],
     ["Height / Weight", summary.heightWeight],
     ["Age", summary.age],
-  ];
+  ].filter(Boolean);
   return el(
     "div",
     { class: "char-card" },
